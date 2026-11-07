@@ -8,7 +8,7 @@
 - **세금 그릇**: 그해 공제 전 소득세가 (가) 0원, (나) 약 50만 원, (다) 약 200만 원인 세 사람. 세액공제·소득공제는 이 그릇 안에서만 효과가 있습니다.
 - **시점**: 3년째·5년째 전부 꺼냄, 62세, 70세(62세부터 해마다 나눠 꺼내 예금으로 옮긴 금액 포함). 노란우산은 그냥 해약, 폐업 수령(3·5년·62세), 노령 수령(70세)을 따로 봤습니다.
 - **경로**: 과거 각 시작 연도(1992년~)부터의 실제 주식·예금 금리 경로(시작 연도 21~32개)와 부트스트랩 10,000경로(블록 길이 3종: PW_eq·PW_dep·12개월).
-- **규칙**: 연금저축 세액공제·기타소득세 16.5%·연금소득세(5.5%/4.4%, 1,500만 원 기준), 노란우산 소득공제·퇴직소득세, 건강보험료 시나리오, 기초연금 소득인정액(사람 A·B·C)을 법령 원문과 「2026년 기초연금 사업안내」에서 확인해 넣었습니다(`references/`). 퇴직소득세·기초연금 등 24개 항목은 손으로 계산한 값과 코드 값을 대조했습니다(`results/hand_checks.csv`).
+- **규칙**: 연금저축 세액공제·기타소득세 16.5%·연금소득세(5.5%/4.4%, 1,500만 원 기준), 노란우산 소득공제·퇴직소득세, 건강보험료 시나리오, 기초연금 소득인정액(사람 A·B·C)을 법령 원문과 「2026년 기초연금 사업안내」에서 확인해 넣었습니다(`references/`). 퇴직소득세·기초연금 등 32개 항목은 손으로 계산한 값과 코드 값을 대조했습니다(`results/hand_checks.csv`).
 
 ## 결과: 상담표
 주식 100%·월 30만 원·기준 셀. 칸마다 세 가지를 적었습니다: **① 앞쪽 상품이 예금보다 적었던 과거 시작 연도 수 / 전체 시작 연도 수 · ② 부트스트랩 1만 경로 중 앞쪽 상품이 예금보다 적은 경로 비율(블록 길이 3종의 최소~최대) · ③ 판정 말.**
@@ -16,7 +16,7 @@
 | 비교 | 3년째 꺼냄 | 5년째 꺼냄 | 62세 | 70세 |
 |---|---|---|---|---|
 | 연금저축 < 예금, 세금 0원 (가) | 14/32 · 38~41% · 비슷 | 12/30 · 33~37% · 대체로 유리 ※(과거: 비슷) | 10/29 · 29~35% · 대체로 유리 | 0/21 · 19~22% · 대체로 유리 ※(과거: 유리) |
-| 연금저축 < 예금, 세금 0원 + 기초연금 경계 (사람 B) | | | | 중소도시 3/21 · 부트스트랩 없음 · 유리(과거 기준), 대도시 10/21 · 부트스트랩 없음 · 비슷(과거 기준) |
+| 연금저축 < 예금, 세금 0원 + 기초연금 경계 (사람 B) | | | | 중소도시 4/21 · 부트스트랩 없음 · 대체로 유리(과거 기준), 대도시 10/21 · 부트스트랩 없음 · 비슷(과거 기준) |
 | 연금저축 < 예금, 세금 내는 사람 (다) | 14/32 · 37~40% · 비슷 | 11/30 · 31~36% · 대체로 유리 ※(과거: 비슷) | 3/29 · 17~24% · 대체로 유리 ※(과거: 유리) | 0/21 · 8~12% · 유리 |
 | 노란우산 그냥 해약 < 예금 (가) | 32/32 · 100% · 불리 | 30/30 · 100% · 불리 | 28/29 · 99~100% · 불리 | |
 | 노란우산 폐업·노령 < 예금, 세금 0원 (가) | 14/32 · 52~79% · 불리 ※(과거: 비슷) | 13/30 · 56~85% · 불리 ※(과거: 비슷) | 13/29 · 57~87% · 불리 ※(과거: 비슷) | 10/21 · 73~99% · 불리 ※(과거: 비슷) |
@@ -29,28 +29,45 @@
 - 사람 B(기초연금) 칸은 부트스트랩을 돌리지 않아(기초연금은 과거 경로만 계산) 과거 시작 연도 비율로 판정했습니다.
 - 노란우산은 3·5년·62세가 폐업 수령, 70세가 노령 수령입니다. 62세에는 노령 요건(가입 120회 + 60세)을 채우지 못합니다. 그냥 해약은 3·5년째는 모든 시작 연도에서, 62세는 29개 중 28개에서 예금보다 적었습니다.
 - 칸 전체(과거 비율·부트스트랩 최소·최대·가운데값·두 판정)는 `python ../check_numbers.py --csv 파일명`으로 CSV로 뽑을 수 있습니다.
-- '세금 0원 + 기초연금 경계'는 사람 B(국민연금 월 50만 원, 집 4억5천만 원, 소득인정액이 선정기준액의 87%)가 65~70세에 받는 기초연금까지 더한 비교입니다. 연금저축에서 받는 연금이 소득으로 잡혀 기초연금이 줄어들 수 있어서입니다. 중소도시·대도시는 기본재산액 지역 구분입니다. 이 칸은 사업안내 기준 해석(연금 전액을 소득으로, 수령 전 잔액은 금융재산으로)을 썼습니다.
+- '세금 0원 + 기초연금 경계'는 사람 B(국민연금 월 50만 원, 집 4억5천만 원, 소득인정액이 선정기준액의 87%)가 65~70세에 받는 기초연금까지 더한 비교입니다. 연금저축에서 받는 연금이 소득으로 잡혀 기초연금이 줄어들 수 있어서입니다. 중소도시·대도시는 기본재산액 지역 구분입니다. 이 칸은 사업안내 기준 해석(연금 전액을 소득으로, 수령 전 잔액은 금융재산으로, 이자는 사업안내 70쪽 시점으로)을 썼습니다.
 - 표의 모든 숫자는 `results/N/grid_stats.csv`(과거 연도), `results/N/boot_stats.csv`(부트스트랩), `results/N/bp_stats.csv`(기초연금 칸)에서 다시 셌고, `../check_numbers.py`가 표의 칸 문자열을 assert합니다.
 
-아래 두 단락은 모두 사람 B·세금 0원 (가)·주식 100%·월 30만 원·중소도시 조건이고, 사업안내 기준 칸을 썼습니다. 칸은 **연금저축이 예금보다 적었던 시작 연도 수 / 전체 · 차이 중앙값**입니다. 차이는 (연금저축 + 기초연금) − (예금 + 기초연금)을 누적 납입액으로 나눈 값이라, +0.4면 납입액의 40%만큼 연금저축 쪽이 많았다는 뜻입니다(결과 문서 표 5-4·5-5).
+아래 두 단락은 모두 사람 B·세금 0원 (가)·주식 100%·월 30만 원·중소도시 조건이고, 사업안내 기준 칸을 썼습니다. 칸은 **연금저축이 예금보다 적었던 시작 연도 수 / 전체 · 차이 중앙값**입니다. 차이는 (연금저축 + 기초연금) − (예금 + 기초연금)을 누적 납입액으로 나눈 값이라, +0.4면 납입액의 40%만큼 연금저축 쪽이 많았다는 뜻입니다(결과 문서 표 5-4~5-7). 같은 조건의 70세 비교는 **4/21 · +0.167**입니다.
+
+### 이자 반영 시점
+기초연금은 행복이음에 조회되는 전년도 이자소득을 4월부터 이듬해 3월까지 반영합니다(사업안내 인쇄 70쪽 표). 그래서 해마다 1~3월에는 2년 전 이자, 4~12월에는 1년 전 이자를 월 소득(연간 이자 ÷ 12)으로 넣었습니다. 같은 쪽 ※(그해 새로 받는 사람이고 그해 이자가 없으면 전년도 이자를 넣지 않음)는 65세 첫해(2034년)에 그해 이자가 0인 경로에만 썼습니다.
+- 앞선 판은 그해 이자를 그해 소득으로 넣었습니다(연구자 가정). 그렇게 넣으면 70세 비교가 **3/21 · +0.191**, 사업안내 시점이면 **4/21 · +0.167**입니다.
+- 사람이 처음 가진 금융재산의 이자는 해마다 같아서 시점을 바꿔도 같습니다. 바뀌는 것은 시뮬레이션이 만든 예금의 이자(한두 해 늦은 값이 들어감)와 3년 만기 예금 이자(이듬해와 그다음 해로 9:3 나뉨)입니다.
+- 기초연금 표 일곱 개(표 5·5-1~5-5·7-1)에서 손해 건수가 바뀐 칸은 모두 이 사람 B·(가)·중소도시 칸이고 1건씩입니다(결과 문서 표 5-7). 다른 칸은 하나도 바뀌지 않았습니다.
+- 사업안내 시점을 기준으로 삼은 것은 앞선 판 결과(3/21)를 본 뒤(2026-11-08)입니다. 원문 근거로 바꿨고, 바꾼 방향은 연금저축에 불리한 쪽(손해 +1)입니다.
+
+*English: Interest income now enters the basic-pension test on the official timetable (January–March uses interest from two years earlier, April–December from the previous year); this moves the 70-year comparison from 3 to 4 of 21 start years and changes no other loss count.*
 
 ### 75세까지 넓히면
 위 상담표의 기초연금은 65~70세만 더했습니다. 75세(2044년)까지 넓혀 보았습니다. 납입은 70세에 끝나고, 2040년부터는 남은 연금저축을 10년에 나눠 받는 계획(÷ 10, ÷ 9, …)으로 꺼낸다고 두었습니다.
-- 75세까지 실제 시장 자료가 있는 16개 시작 연도(1992~2007년)에서 62세부터 받는 판은 **1/16 · +0.448**, 70세부터 받는 판(연기판)은 **0/16 · +1.191**이었습니다.
-- 70세 비교와 같은 21개 시작 연도로 보면(자료가 끝난 2026년 8월 뒤는 2026년 예금 금리로 채움) 62세 판 **1/21 · +0.473**(70세 비교에서는 3/21), 연기판 **0/21 · +1.454**였습니다.
-- 2040년에 남은 돈을 한꺼번에 꺼내면 62세 판이 **3/16 · +0.400**, **3/21 · +0.220**으로 나빠집니다. 이 판은 남은 돈 전부를 그해 연금소득으로 잡고, 1,500만 원을 넘으면 종합과세와 15% 분리과세 중 낮은 쪽을 매깁니다(민감도로만 둔 옛 판).
-- 75세 말에도 연금저축 잔액이 남습니다(16개 시작 연도에서 2040년 초 잔액의 47~96%, 중앙값 65% — 재감사가 따로 계산한 값으로 CSV에는 없음). 이 돈이 76세 이후에 기초연금을 얼마나 깎을지는 계산하지 않아, 75세 결과는 연금저축 쪽에 유리하게 기울어 있을 수 있습니다.
+- 75세까지 실제 시장 자료가 있는 16개 시작 연도(1992~2007년)에서 62세부터 받는 판은 **1/16 · +0.451**, 70세부터 받는 판(연기판)은 **0/16 · +1.177**이었습니다.
+- 70세 비교와 같은 21개 시작 연도로 보면(자료가 끝난 2026년 8월 뒤는 2026년 예금 금리로 채움) 62세 판 **1/21 · +0.453**(70세 비교에서는 4/21), 연기판 **0/21 · +1.434**였습니다.
+- 2040년에 남은 돈을 한꺼번에 꺼내면 62세 판이 **3/16 · +0.403**, **6/21 · +0.196**으로 나빠집니다. 이 판은 남은 돈 전부를 그해 연금소득으로 잡고, 1,500만 원을 넘으면 종합과세와 15% 분리과세 중 낮은 쪽을 매깁니다(민감도로만 둔 옛 판).
+- 75세 말에도 연금저축 잔액이 남습니다(16개 시작 연도에서 2040년 초 잔액의 **47~96%, 중앙값 65%**, `results/N/ext75a_rem_ratio.csv`). 이 돈이 76세 이후에 깎는 기초연금은 아래 80세 판에서 봤습니다.
 
-*English: Extending the basic-pension window to age 75 (withdrawing the remainder in 10 annual instalments from 2040), the pension account fell short of the deposit in 1 of 16 start years for the draw-from-62 plan and in none for the draw-from-70 plan; the balance still left at 75 is not counted against later basic pension.*
+*English: Extending the basic-pension window to age 75 (withdrawing the remainder in 10 annual instalments from 2040), the pension account fell short of the deposit in 1 of 16 start years for the draw-from-62 plan and in none for the draw-from-70 plan.*
+
+### 80세까지 넓히면
+75세 판과 같은 규칙으로 80세(2049년)까지 이어 갔습니다. 2049년 1월에 남은 돈을 모두 꺼내므로 80세 말 연금저축 잔액은 0이고, 75세 판에서 빠졌던 76~80세 기초연금 감액이 들어갑니다.
+- 80세 말까지 실제 시장 자료가 있는 시작 연도는 **11개**(1992~2002년)입니다. 62세 판 **0/11 · +0.736**, 연기판 **0/11 · +1.659**였습니다.
+- 자료가 끝난 뒤를 예금 금리로 채우는 판은 만들지 않았습니다. 그 기간에는 주식 위험이 0이 되기 때문입니다. 81세 이후는 실제 자료가 있는 시작 연도가 10개로 더 줄어 계산하지 않았습니다.
+- 70세 비교에서 손해였던 4개 시작 연도(2006·2009~2011년, `results/N/bp_hist_p70.csv`)는 이 11개에 들어 있지 않습니다. 그래서 0/11은 늦게 시작한 경로의 손해가 80세에 사라졌다는 뜻이 아닙니다.
+
+*English: Carried to age 80 on the 11 start years with real market data through 2049, the pension account fell short of the deposit in none of them, for either withdrawal plan.*
 
 ### 처음 가진 돈이 3년 만기 예금이면
-사람 B가 원래 가진 금융재산을 1년 예금 대신 3년 만기 정기예금(만기 해 2029·2032·2035·2038년)으로 두면, 62세 판의 결과가 **3/21 · +0.191**에서 **9/21 · +0.080**으로 나빠집니다.
+사람 B가 원래 가진 금융재산을 1년 예금 대신 3년 만기 정기예금(만기 해 2029·2032·2035·2038년)으로 두면, 62세 판의 결과가 **4/21 · +0.167**에서 **9/21 · +0.055**로 나빠집니다.
 - 이자를 덜 쳐 줘서가 아닙니다. 3년 동안 소득으로 잡히는 이자 합은 두 경우 모두 6,526,097원으로 같습니다.
-- 차이는 이자가 들어오는 해입니다. 3년치 이자가 만기 해에 한꺼번에 잡히면 그해 소득인정액이 선정기준액의 **101.7%**가 되어 어느 쪽이든 기초연금을 못 받고, 만기가 아닌 해에는 **79.7%**로 내려가 여유가 생깁니다(1년 예금이면 해마다 **87.0%**). 이 여유를 연금저축에서 받는 연금이 채우면서 기초연금이 깎입니다.
-- 만기 해를 1년·2년 늦춰도 **9/21 · +0.070**, **9/21 · +0.056**, 추가 공제를 연 48만 원으로 자르는 해석으로 읽어도 **9/21 · +0.080**입니다. 연기판은 **0/21 · +0.555**로 그대로 0입니다.
-- 이자를 지급 시점의 소득으로 넣었습니다. 사업안내는 전년도 이자를 4월~이듬해 3월에 반영하므로 실제로는 이자가 두 해에 걸쳐 나뉩니다. 이 효과는 재현하지 않았습니다.
+- 차이는 이자가 들어오는 때입니다. 3년치 이자가 한 해(12개월)에 한꺼번에 잡히면 그 12개월 동안 소득인정액이 선정기준액의 **101.7%**가 되어 어느 쪽이든 기초연금을 못 받고, 만기가 아닌 해에는 **79.7%**로 내려가 여유가 생깁니다(1년 예금이면 해마다 **87.0%**). 이 여유를 연금저축에서 받는 연금이 채우면서 기초연금이 깎입니다.
+- 만기 해를 1년·2년 늦춰도 **9/21 · +0.056**, **9/21 · +0.062**, 추가 공제를 연 48만 원으로 자르는 해석으로 읽어도 **9/21 · +0.055**입니다. 연기판은 **0/21 · +0.563**으로 그대로 0입니다.
+- 만기 이자는 위 '이자 반영 시점' 규칙대로 만기 이듬해 4~12월과 그다음 해 1~3월(9:3)에 나눠 넣었습니다.
 
-*English: If the person's own savings sit in a 3-year term deposit instead of 1-year deposits, the pension account fell short in 9 of 21 start years instead of 3, because lumping three years of interest into the maturity year shifts which years the basic pension is reduced, not the total interest counted.*
+*English: If the person's own savings sit in a 3-year term deposit instead of 1-year deposits, the pension account fell short in 9 of 21 start years instead of 4, because lumping three years of interest into one 12-month window shifts when the basic pension is reduced, not the total interest counted.*
 
 ## 말하면 안 되는 것
 - "연금저축이 예금보다 낫다/못하다" — 세금 그릇, 꺼내는 시점, 기초연금 대상 여부에 따라 결론이 바뀝니다. 한 줄로 일반화할 수 없습니다.
@@ -66,12 +83,13 @@
 - 주식 수익률(코스피200 총수익)이 DataGuide·한국거래소 자료라 원자료 없이는 다시 돌릴 수 없습니다(`../DATA_SOURCES.md`).
 
 ## 파일
-- `results/후보5_포트폴리오판_결과_20261106.md`: 전체 결과 문서(표 1~7·5-4·5-5, 가정 17개, 한계, 점검). 원래 연구 저장소에서 그대로 옮겨 문서 안 경로(run 폴더·감사 보고서 등)는 이 저장소에 없습니다. 표 5-4 머리말의 '2040년 초 잔액의 약 절반'은 재감사(2026-11-07)에서 작게 적은 것으로 확인돼 그 자리에 정정 표시를 달았습니다.
-- `results/N/ext75*.csv`(75세 판, `a` = 16개 시작 연도, `b` = 21개; `base`·`defer`·`lump`·`lag1` = 62세 판·연기판·한꺼번에 꺼낸 옛 판·이자 1년 늦춤), `results/N/term_*.csv`·`term_people.csv`(3년 만기 예금 판). 큰 `*_bp_hist.csv`는 9/21을 다시 셀 수 있는 `term_ii_base_bp_hist.csv`만 넣었습니다.
+- `results/후보5_포트폴리오판_결과_20261106.md`: 전체 결과 문서(표 1~7·5-4~5-7, 가정 17개, 한계, 점검). 원래 연구 저장소에서 그대로 옮겨 문서 안 경로(run 폴더·감사 보고서 등)는 이 저장소에 없습니다.
+- `results/N/ext75*.csv`(75세 판, `a` = 16개 시작 연도, `b` = 21개; `base`·`defer`·`lump` = 62세 판·연기판·한꺼번에 꺼낸 옛 판), `ext75a_rem_ratio.csv`(75세 말 잔액 ÷ 2040년 초 잔액), `ext80a_*.csv`(80세 판, 11개 시작 연도), `ext_paths.csv`(나이별 시작 연도 수), `results/N/term_*.csv`·`term_people.csv`(3년 만기 예금 판). 큰 `*_bp_hist.csv`는 9/21을 다시 셀 수 있는 `term_ii_base_bp_hist.csv`만 넣었습니다.
+- `results/N/intalt/*_stats.csv`: 그해 이자를 그해 소득으로 넣은 대조판(표 5-7, 요약 CSV만). `int_timing_cells.csv`는 표 5-7이 비교한 칸 목록입니다.
 - `results/N/`(세금·건보료·기초연금 규칙을 켠 판), `results/F/`(앞선 판): 결과 문서가 읽는 CSV만. `*_hist_*.csv`는 시작 연도별 시뮬레이션 금액, `*_stats.csv`는 그 요약입니다. 원자료 시계열은 들어 있지 않습니다.
 - `docs/설계서_후보5_포트폴리오판_20261106.md`: 설계서(바꾼 규칙과 이유).
 - `references/`: 법령 원문 발췌(`law_*.md`, 국가법령정보센터), 규칙별 1차 출처 확인 메모. 「2026년 기초연금 사업안내」 원문 발췌는 재배포 조건(공공누리 표시 없음)을 확인하지 못해 넣지 않았고, 메모에는 쪽 번호만 남겼습니다.
 - 코드: `notebooks/candidate5/_gen_cand5p.py`(이 판의 결과·문서 생성), `_gen_cand5.py`·`_doc_cand5.py`(앞선 판, `_gen_cand5p.py`가 씀), `_diff_runs_cand5p.py`(실행 간 칸 비교). 계산 엔진은 `../src/pension_lab/cand5.py`·`cand5p.py`.
 
 ---
-**English summary.** For a hypothetical self-employed 57-year-old who pays no income tax and saves KRW 300k a month in equities, a tax-advantaged pension account fell short of a bank deposit in 40–44% of historical start years if cashed out after 3–5 years, and in none of 21 start years when held to 70 (but in 19–22% of 10,000 bootstrapped paths). Canceling the "Yellow Umbrella" mutual-aid plan lost to the deposit in every start year when cashed out after 3 or 5 years, and in 28 of 29 at 62. For a near-threshold basic-pension recipient the result at 70 depends on region (3 vs 10 of 21 start years). Tax, basic-pension and health-insurance rules were modeled from primary legal texts and checked against hand calculations; the verdict words in the table follow the author's own thresholds on the bootstrap share (15/35/65%), set after seeing the results, and are not advice.
+**English summary.** For a hypothetical self-employed 57-year-old who pays no income tax and saves KRW 300k a month in equities, a tax-advantaged pension account fell short of a bank deposit in 40–44% of historical start years if cashed out after 3–5 years, and in none of 21 start years when held to 70 (but in 19–22% of 10,000 bootstrapped paths). Canceling the "Yellow Umbrella" mutual-aid plan lost to the deposit in every start year when cashed out after 3 or 5 years, and in 28 of 29 at 62. For a near-threshold basic-pension recipient the result at 70 depends on region (4 vs 10 of 21 start years, with interest counted on the official basic-pension timetable). Tax, basic-pension and health-insurance rules were modeled from primary legal texts and checked against hand calculations; the verdict words in the table follow the author's own thresholds on the bootstrap share (15/35/65%), set after seeing the results, and are not advice.

@@ -44,10 +44,25 @@ def diff(old: Path, new: Path):
     return cells, pd.DataFrame(summ)
 
 
+def bp_only(cells: pd.DataFrame) -> pd.Series:
+    """설계서 9절(이자 시점 기준 변경) 점검: 기초연금 관련 칸 = 이름에 bp_가 있는 파일의 열(세금만 다시 낸 ps_nps·ny_nps·contrib 제외),
+    int_timing_* 표(표 5-7), constants.csv의 int_t 행, hand_checks.csv의 이자 시점 행."""
+    f = cells["파일"].astype(str)
+    return ((f.str.contains("bp_") & ~cells["열"].isin(["ps_nps", "ny_nps", "contrib"])) | f.str.contains("int_timing_")
+            | (f.str.endswith("constants.csv") & (cells.get("키") == "int_t")) | (f.str.endswith("hand_checks.csv") & cells.get("항목", pd.Series("", index=cells.index)).astype(str).str.contains("이자 시점")))
+
+
 if __name__ == "__main__":
     old, new = Path(sys.argv[1]), Path(sys.argv[2])
     cells, summ = diff(old, new)
     stem = new / f"diff_vs_{old.name}"
     cells.to_csv(f"{stem}_cells.csv", index=False, encoding="utf-8-sig"); summ.to_csv(f"{stem}_summary.csv", index=False, encoding="utf-8-sig")
     print(summ.to_string(index=False))
-    print(f"바뀐 칸 {len(cells)}개 → {stem}_cells.csv")
+    out = cells[~bp_only(cells)] if len(cells) else cells
+    print(f"바뀐 칸 {len(cells)}개 → {stem}_cells.csv, 그중 기초연금 관련 밖 {len(out)}개" + ("" if out.empty else ":\n" + out.groupby(["파일", "열"]).size().to_string()))
+    # 이자 시점이 옛 run과 같은 판(옛 run에 intalt 없음 = 그해 이자 기준) → 새 run의 N/intalt/ = 옛 run의 N/ 이어야 함(맞바꿈 대조)
+    if (new / "N" / "intalt").exists() and not (old / "N" / "intalt").exists():
+        c2, s2 = diff(old / "N", new / "N" / "intalt")
+        s2.to_csv(f"{stem}_intalt_summary.csv", index=False, encoding="utf-8-sig"); c2.to_csv(f"{stem}_intalt_cells.csv", index=False, encoding="utf-8-sig")
+        print(s2.to_string(index=False))
+        print(f"맞바꿈 대조(옛 N/ 대 새 N/intalt/, 같은 이름 파일): 바뀐 칸 {len(c2)}개 → {stem}_intalt_cells.csv")

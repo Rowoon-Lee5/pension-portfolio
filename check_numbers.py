@@ -2,7 +2,7 @@
 
 assert 하는 것: 01 해지(C) 부호·D÷Y 범위, 더 담기 규칙 234칸과 문턱별 P 범위·예시 칸, 더 담기 대 줄이기 부호,
 03 상담표 전체 칸(과거 시작 연도 수·부트스트랩 범위·판정 문자열이 03 README에 그대로 있는지)과 기초연금 칸,
-03 '75세까지 넓히면'·'3년 만기 예금이면' 단락 숫자(표 5-4·5-5).
+03 '이자 반영 시점'·'75세까지 넓히면'·'80세까지 넓히면'·'3년 만기 예금이면' 단락 숫자(표 5-4~5-7).
 assert 하지 않고 표만 출력하는 것: 01 표본별 범위·거래비용 범위, 02 전체(그림 3 숫자). README와는 눈으로 대조.
 실행: python check_numbers.py   (통과하면 'ok'와 표를 출력)
       python check_numbers.py --csv 경로   (03 상담표 전체를 CSV로도 저장)
@@ -105,7 +105,7 @@ def cand5():
 
 
 def cand5_ext():
-    """03 README '75세까지 넓히면'·'처음 가진 돈이 3년 만기 예금이면': 사람 B (가)·★ 칸(K1 전액, 기본판 K2 안넣음,
+    """03 README '이자 반영 시점'·'75세/80세까지 넓히면'·'처음 가진 돈이 3년 만기 예금이면': 사람 B (가)·★ 칸(K1 전액, 기본판 K2 안넣음,
     연기판 K2 넣음)·주식 100%·월 30만·중소도시, 연금저축 < 예금. 값 = '손해/전체 · 차이 중앙값(÷ 누적 납입)'."""
     def cell(f, K2):
         s = rd(T3 / "results/N" / f)
@@ -120,6 +120,11 @@ def cand5_ext():
     for v in ("", "_만기+1년", "_만기+2년", "_상한"):
         out[f"3년{v}"] = cell(f"term_ii{v}_base_bp_stats.csv", "안넣음")
     out["3년_연기"] = cell("term_ii_defer_bp_stats.csv", "넣음")
+    out["ext80a_base"] = cell("ext80a_base_bp_stats.csv", "안넣음")
+    out["ext80a_defer"] = cell("ext80a_defer_bp_stats.csv", "넣음")
+    out["그해이자_1년"] = cell("intalt/bp_stats.csv", "안넣음")      # 이자 반영 시점 민감도(표 5-7)
+    r = rd(T3 / "results/N/ext75a_rem_ratio.csv")["base"]
+    out["잔액비율"] = f"{r.min() * 100:.0f}~{r.max() * 100:.0f}%, 중앙값 {r.median() * 100:.0f}%"
     tp = rd(T3 / "results/N/term_people.csv").set_index(["사람", "세금 그릇", "판", "해"])
     for k, key in (("비율_1년", ("B", "(가)", "i", "해마다")), ("비율_만기", ("B", "(가)", "ii", "만기 해")),
                    ("비율_만기아님", ("B", "(가)", "ii", "만기 아닌 해"))):
@@ -140,7 +145,7 @@ if __name__ == "__main__":
     readme3 = (T3 / "README.md").read_text(encoding="utf-8")
     miss = [c for c in tab["칸"] if c not in readme3]
     assert not miss, f"03 README에 없는 칸: {miss}"
-    assert bp["중소도시"] == "3/21" and bp["대도시"] == "10/21", bp
+    assert bp["중소도시"] == "4/21" and bp["대도시"] == "10/21", bp
     ext = cand5_ext()
     miss = [f"{k}={v}" for k, v in ext.items() if v not in readme3]
     assert not miss, f"03 README에 없는 75세·3년 예금 숫자: {miss}"
