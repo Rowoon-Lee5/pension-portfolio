@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.ipynb_checkpoints/
+.env
+.env.*
+
+# 원자료는 넣지 않는다 (DATA_SOURCES.md). 재배포 조건을 확인한 ECOS 파일만 예외.
+data/dataguide/
+data/raw/**
+!data/raw/**/
+!data/raw/**/ecos_*.csv
+data/processed/**
+!data/processed/pilot9_ecos_deposit_rates_monthly.csv
+*.xlsx
+*.xls
+*.Dat
+*.zip
+*.pdf

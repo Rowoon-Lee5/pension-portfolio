@@ -1,0 +1,18 @@
+# 계산·그림
+numpy
+pandas
+scipy
+statsmodels
+arch
+matplotlib
+openpyxl
+xlrd
+# 노트북 생성·실행 (01의 D·I1)
+nbformat
+nbclient
+ipykernel
+# 자료 받기 (src/pension_lab/fetch)
+requests
+pymupdf
+FinanceDataReader
+yfinance

@@ -1,0 +1,11 @@
+﻿파일,대조 행,최대 상대차,제외,노란우산 해약 바뀐 행
+base_hist_p62.csv,522,0.0,ny_cancel 열,0.0
+base_hist_p70.csv,378,0.0,ny_cancel 열,0.0
+base_hist_wd36.csv,576,0.0,ny_cancel 열,576.0
+base_hist_wd60.csv,540,0.0,ny_cancel 열,540.0
+grid_stats.csv,3861,0.0,"ny_cancel 쌍, D08:95% 셀 306행",1440.0
+change_table.csv,3663,0.0,"ny_cancel 쌍, D08:95% 셀 306행",1368.0
+crash_cases.csv,72,0.0,ny_cancel 열,
+tax_effect.csv,48,0.0,,
+mde.csv(동결 cand5_mde_prerun.csv 대비),22,0.0,ny_cancel 쌍(F1로 다시 계산),
+boot_stats.csv,594,0.0,ny_cancel 쌍,
