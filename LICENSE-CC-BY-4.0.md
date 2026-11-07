@@ -11,4 +11,4 @@
 - 요약: https://creativecommons.org/licenses/by/4.0/
 - 법적 전문(legal code): https://creativecommons.org/licenses/by/4.0/legalcode
 
-Copyright (c) 2026 pension-portfolio author
+Copyright (c) 2026 Rowoon Lee

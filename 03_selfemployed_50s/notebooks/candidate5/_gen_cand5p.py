@@ -197,7 +197,11 @@ def hand_checks() -> pd.DataFrame:
              {"항목": "M2(r3) 65세 이후 여력, C (가): 국민연금 1,440만 → 806만 − 150만 = 656만 × 6%", "손계산": 393_600, "코드": CP.room65(0, 14.4e6)},
              {"항목": "M3(r3) 70세 잔액 4,000만 원, (가): 3몫 × min(374,000, 586,667)", "손계산": 1_122_000, "코드": float(CP.rem_tax(40e6, 0, .044))},
              {"항목": "L1 4만 원은 이자에서만: 40만 + max(1만 − 4만, 0) + 재산 5만", "손계산": 450_000, "코드": float(CP.basic_pension(400_000, 0.0, 1e8, 2e7, hd, 10_000)[1])},
-             {"항목": "L3 금융 1천만: 2천만 공제가 주택 몫을 깎지 않음 → 재산 1,500만 × 4% ÷ 12 + 40만", "손계산": 450_000, "코드": float(CP.basic_pension(400_000, 0.0, 1e8, 1e7, hd)[1])}]
+             {"항목": "L3 금융 1천만: 2천만 공제가 주택 몫을 깎지 않음 → 재산 1,500만 × 4% ÷ 12 + 40만", "손계산": 450_000, "코드": float(CP.basic_pension(400_000, 0.0, 1e8, 1e7, hd)[1])},
+             {"항목": "각 괄호 0 하한(사업안내 78쪽), 대도시·집 1억·금융 2천만·이자 월 0.25%: 재산 환산 0 → 40만 + (5만 − 4만)", "손계산": 410_000,
+              "코드": float(CP.basic_pension(400_000, 0.0, 1e8, 2e7, CP.Q("bp_home_ded")["대도시"], 2e7 * rt)[1])},
+             {"항목": "각 괄호 0 하한, 대도시·집 1억·금융 3천만: 0 + 1천만 × 4% ÷ 12 + 40만 + (7.5만 − 4만)", "손계산": 468_333.33,
+              "코드": round(float(CP.basic_pension(400_000, 0.0, 1e8, 3e7, CP.Q("bp_home_ded")["대도시"], 3e7 * rt)[1]), 2)}]
     o = {**CP.REC, "defer": True}; z = np.zeros((1, 168)); acc = CP.accumulate(z, z, z, 500_000, 1.0, o, None, 168)
     rows.append({"항목": "H2 수령 연기판, 수익 0·(다)·월 50만: 8,400만 × 0.956 + 환급 예금 1,386만", "손계산": 94_164_000,
                  "코드": float(CP.evaluate(acc, 500_000, 2e6, 168, "p70", o)["ps"][0])})
@@ -287,6 +291,20 @@ def defer_run(out: Path, ppl: dict) -> None:
         for d, name in ((df, f"{v}_hist_p70.csv"), (bp, f"{v}_bp_hist_p70.csv"), (CP.bp_stats(bp), f"{v}_bp_stats.csv"),
                         (pd.concat([C.loss_stats(df, a, b).assign(비교="p70", 쌍=f"{a}<{b}") for a, b in CP.PAIRS["p70"]]), f"{v}_stats.csv")):
             d.to_csv(out / name, index=False, encoding="utf-8-sig"); log(f"{out.name}/{name} {len(d)}행")
+
+
+def guide_check(N: Path) -> None:
+    """각 괄호 0 하한 수정(2026-11-07) 대조: 수정 전 r3 코드로 사업안내식을 따로 계산한 guide_floor_check_20261107.csv(바뀌는 칸 = 사람 A·대도시만)의
+    *_guide 값 = 이번 bp_stats(기본판)·defer_bp_stats(연기판)."""
+    g = pd.read_csv(OUT / "guide_floor_check_20261107.csv")
+    assert (g.b == "A").all() and (g.region == "대도시").all()
+    key = ["asset", "m", "person", "b", "K1", "K2", "region", "쌍"]
+    for pan, f in (("기본판", "bp_stats.csv"), ("연기판", "defer_bp_stats.csv")):
+        gg = g[g["판"] == pan]; j = gg.merge(pd.read_csv(N / f), on=key, how="left")
+        assert len(j) == len(gg) > 0
+        for c in [c[:-6] for c in g.columns if c.endswith("_guide")]:
+            assert np.allclose(j[c], j[c + "_guide"], rtol=1e-12, atol=0, equal_nan=True), (pan, c)
+    log(f"사업안내 각 괄호 0 하한 대조 통과({len(g)}행)")
 
 
 def build_doc(run: Path, rbar: float, period: str) -> Path:
@@ -727,6 +745,7 @@ if __name__ == "__main__":
     compute(run / "N", {"N1": True, "N2": True, "N3": True}, mde, ppl)
     decompose(run / "N", ppl)
     defer_run(run / "N", ppl)
+    guide_check(run / "N")
     CP.constants_table().to_csv(run / "N" / "constants.csv", index=False, encoding="utf-8-sig")
     mods = [f"src/pension_lab/{m}.py" for m in ("cand5", "cand5p", "pilot7", "pilot9", "lifecycle", "bootstrap", "paths", "runrecord")] + \
            ["notebooks/candidate5/_gen_cand5.py", "notebooks/candidate5/_doc_cand5.py",
@@ -734,7 +753,7 @@ if __name__ == "__main__":
             "docs/ideas/본연구후보_20261027/후보5_간단테스트/설계서_후보5_포트폴리오판_20261106.md",
             "references/후보5_추가규칙_1차출처_20261106.md", "references/후보5_기초연금_사람3명_근거_20261106.md",
             "references/law_소득세법_47의2_연금소득공제_20261106.md", "references/law_소득세법_50_기본공제_20261107.md",   # R3-M2
-            "references/mohw_2026_기초연금_사업안내_발췌_20261107.md", "references/SOURCES.md"]
+            "references/mohw_2026_기초연금_사업안내_발췌_20261107.md", "references/law_조특법_86의3_노란우산_20261107.md", "references/SOURCES.md"]
     ins = [paths.DATA_ROOT / "processed" / "pilot9_ecos_deposit_rates_monthly.csv", paths.DATA_ROOT / "raw" / "kr_hist_20261016" / "kr_deposit_annual_kostat2015_1945_2014.csv",
            paths.EQUITY_KR / "idx_kospi200.csv", paths.EQUITY_KR / "idx_kospi200_fundamental.csv",       # L13 주식 입력(pilot7가 직접 읽는 파일)
            paths.DATAGUIDE / "dg_econ_divyield_rates_19900101.csv", paths.DATAGUIDE / "dg_kospi_k200_tr_daily_19800104.csv"]
