@@ -1,7 +1,8 @@
 """README 숫자 대조: 저장소 안 결과 CSV에서 README 숫자 일부를 다시 계산한다(새 시뮬레이션 없음).
 
 assert 하는 것: 01 해지(C) 부호·D÷Y 범위, 더 담기 규칙 234칸과 문턱별 P 범위·예시 칸, 더 담기 대 줄이기 부호,
-03 상담표 전체 칸(과거 시작 연도 수·부트스트랩 범위·판정 문자열이 03 README에 그대로 있는지)과 기초연금 칸.
+03 상담표 전체 칸(과거 시작 연도 수·부트스트랩 범위·판정 문자열이 03 README에 그대로 있는지)과 기초연금 칸,
+03 '75세까지 넓히면'·'3년 만기 예금이면' 단락 숫자(표 5-4·5-5).
 assert 하지 않고 표만 출력하는 것: 01 표본별 범위·거래비용 범위, 02 전체(그림 3 숫자). README와는 눈으로 대조.
 실행: python check_numbers.py   (통과하면 'ok'와 표를 출력)
       python check_numbers.py --csv 경로   (03 상담표 전체를 CSV로도 저장)
@@ -103,6 +104,29 @@ def cand5():
     return pd.concat([t, tb], ignore_index=True), bp
 
 
+def cand5_ext():
+    """03 README '75세까지 넓히면'·'처음 가진 돈이 3년 만기 예금이면': 사람 B (가)·★ 칸(K1 전액, 기본판 K2 안넣음,
+    연기판 K2 넣음)·주식 100%·월 30만·중소도시, 연금저축 < 예금. 값 = '손해/전체 · 차이 중앙값(÷ 누적 납입)'."""
+    def cell(f, K2):
+        s = rd(T3 / "results/N" / f)
+        s = s[(s.m == 300000) & (s.asset == "A") & (s.person == "가") & (s.b == "B") & (s.K1 == "전액") & (s.K2 == K2)
+              & (s.region == "중소도시") & (s["쌍"] == "ps<dep")]
+        assert len(s) == 1, f
+        r = s.iloc[0]
+        return f"{int(r.loss_n)}/{int(r.n)} · {r.median_gap:+.3f}"
+    out = {f"ext75{d}_{p}": cell(f"ext75{d}_{p}_bp_stats.csv", "넣음" if p == "defer" else "안넣음")
+           for d in "ab" for p in ("base", "defer", "lump")}
+    out["1년"] = cell("bp_stats.csv", "안넣음")
+    for v in ("", "_만기+1년", "_만기+2년", "_상한"):
+        out[f"3년{v}"] = cell(f"term_ii{v}_base_bp_stats.csv", "안넣음")
+    out["3년_연기"] = cell("term_ii_defer_bp_stats.csv", "넣음")
+    tp = rd(T3 / "results/N/term_people.csv").set_index(["사람", "세금 그릇", "판", "해"])
+    for k, key in (("비율_1년", ("B", "(가)", "i", "해마다")), ("비율_만기", ("B", "(가)", "ii", "만기 해")),
+                   ("비율_만기아님", ("B", "(가)", "ii", "만기 아닌 해"))):
+        out[k] = f"{tp.loc[key, '선정기준액 대비'] * 100:.1f}%"
+    return out
+
+
 if __name__ == "__main__":
     pd.set_option("display.width", 200)
     out, loss = t4()
@@ -117,6 +141,9 @@ if __name__ == "__main__":
     miss = [c for c in tab["칸"] if c not in readme3]
     assert not miss, f"03 README에 없는 칸: {miss}"
     assert bp["중소도시"] == "3/21" and bp["대도시"] == "10/21", bp
+    ext = cand5_ext()
+    miss = [f"{k}={v}" for k, v in ext.items() if v not in readme3]
+    assert not miss, f"03 README에 없는 75세·3년 예금 숫자: {miss}"
     if "--csv" in sys.argv:
         tab.to_csv(sys.argv[sys.argv.index("--csv") + 1], index=False, encoding="utf-8-sig")
-    print(out, loss, th, d, cost, pairs, t7().to_string(), tab.drop(columns="칸").round(3).to_string(), bp, "ok", sep="\n\n")
+    print(out, loss, th, d, cost, pairs, t7().to_string(), tab.drop(columns="칸").round(3).to_string(), bp, ext, "ok", sep="\n\n")

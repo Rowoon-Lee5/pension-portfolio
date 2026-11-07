@@ -47,6 +47,12 @@ NEW = {
     "basic_ded": (1_500_000, "r3 M1 사람 (가)의 기본공제(본인) 150만 원 — 소득세법 §50①1, references/law_소득세법_50_기본공제_20261107.md 9~10행"
                              "(국가법령정보센터 현행 조문 대조 완료(2026.7.1. 시행본), 같은 파일 17~20행). 과세표준에 §50 공제가 들어감은 "
                              "references/law_소득세법_59의3_57의2_129_21_14_20261010.md 185행(§14②)"),
+    "H75": (228, "8-1 75세 말(2044년 12월) 평가 달. 납입·공제는 H70(168)까지(연구자 가정), 기초연금 창 65~75세"),
+    "term": ((36, "예시", 0), "8-2 판 (ii) 사람 고유 금융재산 = 3년 만기 정기예금(단리 r̄, 2026년 1월 가입 → 만기 해 k ≡ 0 mod 3) — 연구자 가정. "
+                             "금리는 1년 예금 r̄를 그대로 씀(3년 기간 프리미엄 무시, 감사 L4). "
+                             "추가 공제 = 4만 × (36 − 12) — 「2026년 기초연금 사업안내」 인쇄 70쪽 예시(5년 적금 40개월 해지: 40 × 4만 공제) 해석 "
+                             "(원문 발췌는 재배포 조건 미확인으로 저장소에 없음, 쪽 번호만)"),
+    "term_cap": (480_000, "8-2 민감도 '상한' 해석: 추가 공제를 만기 해 48만 원으로 자름(같은 쪽 문구 '연간 최대 48만원'). 예시와 맞지 않음(_check assert)"),
 }
 Q = lambda k: NEW[k][0]
 AGE0 = 57                                           # 가상 인물(2026년 만 57세), 시작 해(k=0, 2026년)의 나이
@@ -63,14 +69,16 @@ NOT_COMPUTED = {
     "국민연금 연계감액 중간 구간(52.5만~69.9만 원)": "§5 금액이 설계서에 없음 → 사람 3명은 이 구간 밖(assert)",
     "부트스트랩의 기초연금": "기초연금은 역사 경로 기준 셀만",
     "차이 중앙값의 신뢰구간(감사 r2 M6 부분)": "역사 경로가 겹쳐 독립 구간 2~11개뿐이라 구간을 내지 않음. 불확실성은 부트스트랩 손해 확률·n_eff·MDE로만 표시",
-    "71세 이후 기초연금(감사 r2 M4)": "경로 자료가 70세(168개월)에서 끝나 71~75세 연금 수령·잔액을 시뮬레이션할 수 없음 → 65~70세 창만(연기판에 유리한 창, 한계에 적음)",
+    "75세 판(설계서 8-1)의 부트스트랩·격자 셀·S_hi, 76세 이후 기초연금": "75세 판은 기준 셀(S_lo)·역사 경로만(표 5-4). 76세 이후는 계산하지 않음",
+    "3년 정기예금 판(설계서 8-2)의 75세 판·부트스트랩": "65~70세 창·기준 셀·역사 경로만(표 5-5)",
 }
 # 앞선 보고(2026-11-06) '판단이 필요한 것' 번호. 결과 문서 '가정' 절에 그대로 나감.
 ASSUME = {
     "1. 소득평가액": "국민연금 + 연금저축 연금(K1) + 사업소득 b/12(가정 15) + max(예금 이자 − 월 4만 원, 0)(4만 원은 이자에서만, 고시 §6의2). "
                  "예금 이자: 사람이 처음 가진 금융재산 몫 = 사람을 정할 때 쓴 r̄(2026년 금리)로 고정(H1), 시뮬레이션이 만든 예금(인출 예금·환급/절세 예금·예금 상품) 몫 = 그 달 세전 예금 금리. "
                  "해마다 금융재산은 그해 첫날 잔액으로 고정. B 금융재산은 중소도시·사람 (가) 기준으로 풀고 지역 민감도에서도 그대로 둠. "
-                 "r̄ 고정·그해 첫날 잔액·이자 산정 방식은 법령 근거가 아니라 설계 선택(감사 r2 L6). 사업소득을 공제 없이 전액 넣는 것, 금융재산 평가 시점, 이자 산정 방식의 원문 규정은 미확인",
+                 "r̄ 고정·그해 첫날 잔액·이자 산정 방식은 법령 근거가 아니라 설계 선택(감사 r2 L6). 사업소득을 공제 없이 전액 넣는 것, 금융재산 평가 시점, 이자 산정 방식의 원문 규정은 미확인. "
+                 "고유 금융재산은 1년 상품(12개월 초과 추가 공제 없음)으로 봄 — 3년 만기 정기예금 판 = 표 5-5(설계서 8-2)",
     "2. 62~70세 납입": "동결판과 비교하려고 70세까지 납입을 계속하면서 62세부터 인출. 영향은 표 7 원인 분해, 대조는 가정 16 수령 연기판",
     "3. 인출 시점": "해마다 1월 초 납입 전에 인출, 첫 인출 2031년 1월. 70세 말 남은 잔액은 4.4%로 한 번에 평가(D07 방식, 1,500만 원 기준 적용 안 함). "
                  "근거: 연금수령연차 11년 이후에는 한도가 없어(시행령 §40의2④, R 200행) 한 해 1,500만 원 이하로 나눠 받으면 분리과세 4.4%로 받을 수 있음(시간가치 무시). "
@@ -79,7 +87,9 @@ ASSUME = {
                  "(인출분 실효세율 중앙값 (가) 1.56%·(나) 2.20%·(다) 4.39%, 감사 r2 측정). 잔액에도 같은 규칙(1,500만 원 이하 같은 몫으로 나눠 해마다, 시간가치 무시)을 쓴 민감도판 = 표 1-1·표 3·표 5-3",
     "4. 인출 순서": "세액공제 안 받은 원금이 먼저 나옴(K1 과세분만도 이 순서) — 시행령 §40의3① 확인(제도규칙 43행), 연금저축계좌설정약관 기준(하나은행 약관 신구대비표). "
                  "단 추가규칙 209·254행은 같은 조문을 '원문 못 엶 [미확인]'으로 적어 두 근거 파일이 어긋남(감사 r2 L1)",
-    "5. 기초연금 기간·합산": "2034~2039년(65~70세) 6년치를 이자 없이 액면으로 더함",
+    "5. 기초연금 기간·합산": "2034~2039년(65~70세) 6년치를 이자 없이 액면으로 더함. 75세(2044년)까지 넓힌 판 = 표 5-4(설계서 8-1: 납입 70세에 끝, 2040년부터 기본판·연기판 모두 "
+                       "남은 잔액 ÷ 10·÷ 9 …로 나눠 받고 75세 말 잔액 4.4%(가정 3과 같은 원칙, 감사 H1·회원 결정), 노란우산 70세 지급금·예금 상품은 75세까지 예금). "
+                       "기본판이 2040년에 잔액 전부를 꺼내는 옛 판은 표 5-4 아래 민감도 한 줄",
     "6. 금융재산": "인출 예금·세액공제 환급/노란우산 절세 예금·예금 상품 잔액을 넣음. 노란우산 적립금은 기본판에서 넣지 않음 — 납입 중 부금의 금융재산 산입은 미확인(추가규칙 165행). "
                  "넣는 판(그해 첫날 적립금, 이자 없음)을 표 7-1에 나란히 둠(감사 r2 M5). 안 넣는 판의 노란우산 쪽 기초연금은 상한",
     "7. 건보료": "부과 기준 = 과세 대상분(연금소득, 기타소득금액), 연금소득공제 미적용. 62·70세 한꺼번에 평가하는 금액에도 연금소득 50%(D07 연금외16.5% 셀은 기타소득 100%). "
@@ -103,7 +113,7 @@ ASSUME = {
                     "과세표준 ≤ 소득금액이라 하한값. (가)는 b = 0",
     "16. 수령 연기판(H2)": "62~70세 인출 없음, 70세 잔액 4.4%(가정 3 근거). 기초연금 계산에서 연금저축 연금소득 0, K2 넣음 판은 그해 첫날 연금저축 잔액이 금융재산. "
                          "S_lo에서 70세 연금저축에 닿는 N판 규칙은 인출뿐이라 연기판 연금저축 금액은 F판과 같다(코드 assert). 다른 것은 노란우산(퇴직소득세)과 기초연금뿐. "
-                         "⚠ 가정 3의 잔액 세율 비대칭은 연기판에 불리(잔액 규칙 민감도판 = 표 1-1). 기초연금은 65~70세 창만이라 70세 이후 연금이 깎을 기초연금이 빠져 연기판에 유리(표 5 머리말)",
+                         "⚠ 가정 3의 잔액 세율 비대칭은 연기판에 불리(잔액 규칙 민감도판 = 표 1-1). 기초연금은 65~70세 창만이라 70세 이후 연금이 깎을 기초연금이 빠져 연기판에 유리(표 5 머리말). 65~75세 창 = 표 5-4",
     "17. 원인 분해 단계 (나)": "인출액에 F판 세율(4.4%, D07 연금외 셀 16.5%). 5.5%·종합과세 선택·1,500만 원 처리는 단계 (다)",
 }
 # 감사 r1 낮음 중 고치지 않고 밝히는 것(결과 문서 '가정과 한계').
@@ -121,12 +131,15 @@ LIMITS = {
     "L17 사전등록": "설계서에 사전등록 기각 조건이 없고, 빠른 시험 결과값(r̄, f)이 설계서에 들어 있음 → 일부는 실행 뒤에 적음. 이 문서는 판정하지 않는 기술. "
                    "요약의 자동 문장(r1 H2 대체 문장을 r2에서 자동 생성으로 바꿈)과 그 규칙(최악 경로 비교·월 30만 원 기준·부트스트랩 비교·손해 건수)은 결과를 본 뒤 정했다(감사 r2 N-H1·L14)",
     "r2 L3 과세제외 확인 시점": "1월 인출 때 직전 해 세액공제 안 받은 원금까지 과세제외로 씀. 실제 확인은 이듬해 5월 신고 뒤(§40의3② 4호 '확인한 날부터') → 연금저축에 조금 유리",
-    "r2 M4 기초연금 창": "기초연금은 65~70세(2034~2039)만 합산. 연기판의 70세 이후 연금소득이 깎을 기초연금이 빠져 연기판에 유리한 창이다. "
-                       "수령 전 잔액: 「2026년 기초연금 사업안내」 인쇄 92~93쪽이 연금저축 '최종 잔액'을 금융재산으로, 개시 뒤에는 월 수령액만 연금소득으로 봄 "
-                       "→ 사업안내 기준 칸 = 기본판 K2 안넣음·연기판 K2 넣음(K1 전액, 인쇄 70~71쪽). 71~75세로 넓힌 민감도는 경로 자료가 70세에서 끝나 계산하지 않음",
-    "사업안내 12개월 초과 적금 이자 추가 공제": "사업안내 인쇄 70쪽: 가입기간 12개월 초과 적금·저축은 초과 개월 수만큼 연 최대 48만 원 이자 추가 공제. 코드 없음. "
-                                         "시뮬레이션 예금은 12개월 사다리(D05)라 12개월 초과 조건에 해당하지 않아 결과는 같음. 사람이 처음 가진 금융재산이 12개월 초과 상품이면 "
-                                         "이자소득이 월 최대 4만 원 작아짐 → 사람 A·B·C 모두 고유 금융재산 이자가 있어 영향받을 수 있음(상품 기간을 가정하지 않아 미반영·크기 미측정, 특히 B의 87% 경계)",
+    "r2 M4 기초연금 창": "표 1~5-3의 기초연금은 65~70세(2034~2039)만 합산(연기판에 유리한 창). 수령 전 잔액: 「2026년 기초연금 사업안내」 인쇄 92~93쪽이 연금저축 "
+                       "'최종 잔액'을 금융재산으로, 개시 뒤에는 월 수령액만 연금소득으로 봄 → 사업안내 기준 칸 = 기본판 K2 안넣음·연기판 K2 넣음(K1 전액, 인쇄 70~71쪽). "
+                       "75세(2044년)까지 넓힌 판(표 5-4, 설계서 8-1): {t54}",
+    "사업안내 12개월 초과 적금 이자 추가 공제": "사업안내 인쇄 70쪽: 가입기간 12개월 초과 상품은 초과 개월 수만큼 이자 추가 공제. 시뮬레이션 예금은 12개월 사다리(D05)라 해당 없음(assert). "
+                                         "사람 고유 금융재산을 3년 만기 정기예금으로 본 판(표 5-5, 설계서 8-2: 만기 해에 이자 한꺼번에, 추가 공제는 사업안내 예시 해석): {t55}",
+    "M1 기초연금 이자소득 반영 시점(한계 메우기 감사)": "사업안내 인쇄 70쪽 표: 행복이음에 조회되는 전년도 이자소득을 4월~이듬해 3월에 적용. 코드는 그해 이자를 그해 소득으로 넣음"
+                                                "(연구자 가정: 지급 시점 소득; 3년 예금 판의 '만기 아닌 해 이자 0'도 같은 가정). 계산은 바꾸지 않음. "
+                                                "75세 판에 한해 시뮬레이션 예금 이자를 1년 늦춰 넣은 민감도 = 표 5-4 아래 한 줄(실제 시차는 1~2년에 걸침). "
+                                                "표 5-5의 만기 이자가 두 해에 9:3으로 나뉘는 효과는 재현하지 않음",
     "R3-L5 §51·§59의4": "§51①1 경로우대 추가공제(2039 과세연도)와 §59의4⑨ 표준세액공제 7만 원을 넣지 않음(원문 대조 안 함) — 연금저축 세금을 많게 잡는 보수 방향, 크기 작음",
     "R3-L6 잔액 세율·여력": "rem_tax·room65는 80세 이후 몫에도 4.4%를 씀(실제 3.3%). 종합과세를 고른 인출분 세액이 세액공제 여력에 빠짐 — 둘 다 연금저축에 불리한 보수 방향",
     "r2 M9 재현": "r3 코드는 실행 뒤 커밋됨(e01350d, 브랜치 candidate5-20261027). 문서 단계 수정은 그 뒤 커밋. run_meta.txt의 git_head·code_dirty와 "
@@ -251,8 +264,10 @@ def side_yrs(G: np.ndarray, H: int, amt) -> np.ndarray:
 
 
 # ── 적립: cand5.accumulate + N3 인출 경로 ───────────────────────────
-def ps_withdraw(eq, bd, m: float, w_eq: float, mon0=None, wd0: int = WD0):
+def ps_withdraw(eq, bd, m: float, w_eq: float, mon0=None, wd0: int = WD0, pay: int | None = None, re: int | None = None):
     """연금저축 잔액(N3): k ≥ wd0 해마다 첫 달 납입 전에 잔액 ÷ (11 − 연차) 인출(연차 = k − wd0 + 1, 시행령 §40의2③ 한도×1.2 안).
+    re = 인출 계획을 다시 ÷ 10부터 세는 해(8-1 75세 판 = 14(2040년): k ≥ re면 연차 = k − re + 1 → ÷ 10, ÷ 9 …, 감사 H1).
+    re 없이 연차 10에 이르면 잔액 전부(÷ 1, 75세 판 '한꺼번에' 민감도). pay = 납입하는 달 수(없으면 끝까지; 8절 75세 판은 168).
     반환 (마지막 달 말 잔액 (n,), 인출액 W (n, 해), 인출 직후 잔액 R (n, 해)). 납입·1월 리밸런싱·수익 순서는 cand5.accumulate와 같음."""
     eq = np.atleast_2d(eq)
     bd = np.zeros_like(eq) if w_eq == 1 else np.atleast_2d(bd)
@@ -262,9 +277,10 @@ def ps_withdraw(eq, bd, m: float, w_eq: float, mon0=None, wd0: int = WD0):
     mon0 = np.ones(n, int) if mon0 is None else np.asarray(mon0)
     for t in range(T):
         if t % 12 == 0 and t // 12 >= wd0:
-            j = t // 12 - wd0; f = 1 / (10 - j)
+            j = t // 12 - wd0; f = 1 / max(10 - (j if re is None or t // 12 < re else t // 12 - re), 1)
             W[:, j] = f * (E + B); E, B = E * (1 - f), B * (1 - f); R[:, j] = E + B
-        E = E + w_eq * m; B = B + (1 - w_eq) * m
+        if pay is None or t < pay:
+            E = E + w_eq * m; B = B + (1 - w_eq) * m
         if w_eq < 1:
             jan = (mon0 - 1 + t) % 12 == 0; tot = E + B
             E, B = np.where(jan, w_eq * tot, E), np.where(jan, (1 - w_eq) * tot, B)
@@ -273,6 +289,22 @@ def ps_withdraw(eq, bd, m: float, w_eq: float, mon0=None, wd0: int = WD0):
 
 
 def accumulate(eq, bd, dep, m, w_eq, o, mon0=None, H=None) -> dict:
+    h = P("H70")
+    if o["N3"] and H and H > h:                          # 8-1 75세 판: 70세까지 cand5.accumulate 그대로, 납입은 70세에 끝
+        eq, bd, dep = np.atleast_2d(eq), np.atleast_2d(bd), np.atleast_2d(dep)
+        acc = C.accumulate(eq[:, :h], bd[:, :h], dep[:, :h], m, w_eq, o, mon0)
+        G = np.cumprod(1 + dep * (1 - o["D04"]), axis=1)
+        assert np.array_equal(G[:, :h], acc["G"])
+        acc["G"], acc["dep_r"] = G, dep
+        acc["dp"] = np.hstack([acc["dp"], acc["dp"][:, -1:] * G[:, h:] / G[:, h - 1:h]])   # 예금 상품: 납입 없이 75세까지
+        w0 = h // 12 if o.get("defer") else WD0          # 감사 H1(회원 결정): 2040년부터 기본판도 ÷ 10, ÷ 9 …(연기판과 같은 계획), "lump75" = 옛 '한꺼번에' 민감도
+        Vn, W, R = ps_withdraw(eq, bd, m, w_eq, mon0, w0, pay=h, re=None if o.get("lump75") else h // 12)
+        R[:] = 0.0                                       # 사업안내 92~93쪽: 개시 뒤 잔액은 금융재산 아님 → K2 넣음 = 개시 전 잔액만
+        if w0 > WD0:                                     # 연기판: 개시 전 해는 인출 0, K2 = 그해 첫날 잔액
+            W = np.hstack([np.zeros((len(Vn), w0 - WD0)), W])
+            R = np.hstack([acc["ps"][:, [12 * k - 1 for k in range(WD0, w0)]], R])
+        acc["wd"] = (Vn, W, R)
+        return acc
     acc = C.accumulate(eq, bd, dep, m, w_eq, o, mon0)
     if o["N3"] and H == P("H70"):
         if o.get("defer"):                               # H2 수령 연기판: 인출 0, '인출 직후 잔액' = 그해 첫날 잔액
@@ -288,8 +320,11 @@ def accumulate(eq, bd, dep, m, w_eq, o, mon0=None, H=None) -> dict:
 def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: dict | None = None) -> dict:
     """N 스위치를 모두 끄면 노란우산 해약 열 밖은 cand5.evaluate와 같은 연산(자가점검에서 대조).
     bp = people() 결과(주면 p70·N3에서 기초연금 계산). o["wtax"] = "F"면 해마다 꺼낸 돈에 F판 세율(표 7 원인 분해 단계 나, M3).
-    o["defer"] = True면 수령 연기판(H2, accumulate에서 인출 0)."""
-    i, Y = H - 1, H // 12
+    o["defer"] = True면 수령 연기판(H2, accumulate에서 인출 0). H > 168(8-1 75세 판, p70·N3만): 납입·공제는 168개월(Hp)까지,
+    노란우산은 70세 말 지급금(퇴직소득세 뒤)을 예금으로 H까지 굴림."""
+    Hp = min(H, P("H70"))
+    assert H == Hp or (mode == "p70" and o["N3"] and o["D11"] == "lo")
+    i, Y = H - 1, Hp // 12
     rate, cap = o["D02"]
     c, s = C.pension_credit(12 * m, room, rate), (C.ny_saving(12 * m, room, cap) if o["D12"] else 0.0)
     cy = Y if (mode != "wd" or o["D13"]) else Y - 1
@@ -297,10 +332,10 @@ def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: d
     nonded = (cy * (12 * m - c / rate) + (Y - cy) * 12 * m) if o["D18"] else 0.0
     k = P("local") if o["D06"] else 0.0
     side_p, side_n, side_nc = (C.side_account(acc["G"], H, k * x, y) for x, y in ((c, cy), (s, cy), (s, cyn)))
-    prin = H * m
+    prin = Hp * m
     ded = min(12 * m, cap, C.base_for(room)) if o["D10"] == "actual" else min(12 * m, cap)
     over = cyn * (12 * m - ded) + (Y - cyn) * 12 * m
-    V = acc["ps"][:, i]; taxable = np.maximum(V - nonded, 0)
+    V = acc["ps"][:, i] if H == Hp else np.nan; taxable = np.maximum(V - nonded, 0)   # 75세 판은 아래 N3 경로(acc["wd"])만 씀
     hi = o["D11"] == "hi"
     prem = lambda x, share, on=True: Q("nhis") * share * x if (hi and on) else 0.0   # 건보료 1년치(소득 × 반영률 × 7.19%)
     # ponytail: 건보료는 이듬해 1년치로 근사(설계서 N2). 평가 시점 뒤에 내는 몫은 액면으로 뺌.
@@ -312,7 +347,8 @@ def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: d
         return ref - C.ny_cancel_tax(x, room, o["D17"]) - prem(x, Q("nhis_etc")) + side_nc
 
     res = {"contrib": prin, "dep": acc["dp"][:, i]}
-    Yb, Cb = acc["ny_old"][:, i], acc["ny_close"][:, i]
+    Yb, Cb = acc["ny_old"][:, Hp - 1], acc["ny_close"][:, Hp - 1]
+    grow = (lambda x: x * acc["G"][:, i] / acc["G"][:, Hp - 1]) if H > Hp else (lambda x: x)   # 8-1: 70세 지급금 → 예금
     close = lambda: Cb - (retire_tax(Cb - over, H) if o["N1"] else 0.0) + side_n   # 폐업 수령(폐업 적용이율 적립, N1 퇴직소득세)
     if mode == "wd":
         res["ps"] = V - P("etc") * taxable + side_p - prem(taxable, share, o["N2"])
@@ -327,13 +363,14 @@ def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: d
         res["ny_locked"] = Yb + side_n
         res["ny_close"] = close()
         return res
-    res["ny_old"] = Yb - (retire_tax(Yb - over, H) if o["N1"] else 0.0) + side_n
+    res["ny_old"] = grow(Yb - (retire_tax(Yb - over, Hp) if o["N1"] else 0.0)) + side_n
     if not o["N3"]:
         res["ps"] = V - t_rate * taxable + side_p - prem(taxable, share, o["N2"])
         return res
     # N3: 62세(k=WD0)부터 해마다 인출 → 세후는 예금으로. 과세제외 원금이 먼저 나옴(시행령 §40의3① 확인, 연금저축계좌설정약관 기준).
     Vn, W, R = acc["wd"]; G = acc["G"]; n = len(Vn); flat = etc or o.get("wtax") == "F"
-    nd = np.where(np.arange(Y) < cy, 12 * m - c / rate, 12 * m) if o["D18"] else np.zeros(Y)
+    yrs = np.arange(H // 12)                             # 8-1: Y(납입 해) 뒤 해는 납입 0
+    nd = np.where(yrs < cy, 12 * m - c / rate, np.where(yrs < Y, 12 * m, 0.0)) if o["D18"] else np.zeros(len(yrs))
 
     def path(nps: float = 0.0):
         """(연금저축 70세 금액, 해마다 과세분 TX, 인출 예금 DW, 해마다 세액공제 cv, 해마다 노란우산 절세 sv, 노란우산 노령 70세 금액).
@@ -341,8 +378,9 @@ def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: d
         연금저축 세액공제·과세제외 원금·환급 예금은 여력 r65를 씀(예금 쪽은 세액공제 없음). 노란우산 절세·실제 소득공제(퇴직소득세)는 사업소득금액 b가
         있을 때만 r65, b = 0이면 그릇 그대로(R3-M1, 조특법 §86의3①).
         o["rem"] = "min"이면 70세 잔액도 rem_tax(1,500만 원 이하로 나눠 min(분리, 종합), r3 M3 민감도)."""
-        yrs = np.arange(Y); cv, sv = np.where(yrs < cy, c, 0.0), np.where(yrs < cyn, s, 0.0)
+        cv, sv = np.where(yrs < cy, c, 0.0), np.where(yrs < cyn, s, 0.0)
         nd_, sp, ny = nd, side_p, res["ny_old"]
+        lump = Yb - (retire_tax(Yb - over, Hp) if o["N1"] else 0.0)            # 70세 말 노란우산 지급금(8-1에서 예금으로)
         if nps:
             r65 = room65(room, 12 * nps); lp, ln = (yrs >= BP_K0) & (yrs < cy), (yrs >= BP_K0) & (yrs < cyn)
             # R3-M1: 노란우산 소득공제는 사업소득금액에서만 뺀다(조특법 §86의3①) → b = 0(사람 (가))이면 국민연금 몫 여력을 쓰지 않음(rn = 그릇).
@@ -355,7 +393,8 @@ def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: d
             sp = side_p + side_yrs(G, H, k * (cv2 - cv))
             d65 = min(12 * m, cap, C.base_for(rn)) if o["D10"] == "actual" else ded
             over65 = over - ln.sum() * (d65 - ded)
-            ny = Yb - (retire_tax(Yb - over65, H) if o["N1"] else 0.0) + side_n + side_yrs(G, H, k * (sv2 - sv))
+            lump = Yb - (retire_tax(Yb - over65, Hp) if o["N1"] else 0.0)
+            ny = grow(lump) + side_n + side_yrs(G, H, k * (sv2 - sv))
             cv, sv = cv2, sv2
         used, dw, due, TX, DW = np.zeros(n), np.zeros(n), 0.0, np.zeros_like(W), np.zeros_like(W)
         for j in range(W.shape[1]):
@@ -370,41 +409,54 @@ def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: d
         rtax = rem_tax(rem, room, P("pen70"), 12 * nps) if (o.get("rem") == "min" and not flat) else t_rate * rem
         ps = (Vn - rtax + dw * G[:, i] / G[:, 12 * (WD0 + W.shape[1] - 1) - 1] - due
               - prem(rem, share, o["N2"]) + sp)
-        return ps, TX, DW, cv, sv, ny
+        return ps, TX, DW, cv, sv, ny, lump
 
     res["ps"], TX = path()[:2]
     res["n_over1500"] = (TX > Q("pen_limit")).sum(axis=1)
     if bp:
         # ponytail: (나)(다)의 사업소득 = 과세표준 b(하한값, 과세표준 ≤ 소득금액). 실제 소득금액 자료가 생기면 그 값으로 바꿈.
-        res["bp"] = _bp(acc, k, W, R, path, C.base_for(room) / 12, bp)
+        res["bp"] = _bp(acc, k, W, R, path, C.base_for(room) / 12, bp, o.get("term"), o.get("int_lag", 0))
     return res
 
 
-def _bp(acc, k, W, R, path, biz, ppl) -> dict:
-    """65~70세(k=BP_K0..13) 기초연금 합계(월액 12개월치, 액면). 키 (사람, K1, K2, 지역) → ({ps, dep, ny_old, ny_old_in}, 그 사람 국민연금으로 다시 계산한
+def term_income(total: float, months: int, rule: str) -> float:
+    """8-2: 12개월 넘는 상품 이자 total(만기·해지 해에 한꺼번에)의 기초연금 월 이자소득(기본 월 4만 원 공제 전).
+    추가 공제 = 4만 × (가입 개월 − 12): rule "예시" = 상한 없음(사업안내 70쪽 예시와 맞음), "상한" = 48만 원 상한(문구를 만기 해 상한으로 읽음)."""
+    extra = Q("bp_int_ded") * max(months - 12, 0)
+    return max(total - (min(extra, Q("term_cap")) if rule == "상한" else extra), 0.0) / 12
+
+
+def _bp(acc, k, W, R, path, biz, ppl, term=None, lag: int = 0) -> dict:
+    """65~70세(k=BP_K0..13; 8-1 75세 판은 ..18) 기초연금 합계(월액 12개월치, 액면). 키 (사람, K1, K2, 지역) → ({ps, dep, ny_old, ny_old_in}, 그 사람 국민연금으로 다시 계산한
     연금저축 70세 금액, 같은 국민연금·여력으로 다시 계산한 노란우산 노령 70세 금액(r3 M2)).
     K1 True = 과세 대상분만 소득, False = 받은 연금 전액. K2 True = 연금저축 잔액을 금융재산에 넣음(이자는 안 붙음).
     금융재산 = 사람 고유 금융재산 + 그 상품 때문에 생긴 예금(인출 예금·환급/절세 예금·예금 상품), 그해 첫날 잔액.
     이자 = 고유 금융재산 몫은 people()의 r̄ 고정 이자 i0(H1) + 시뮬레이션 예금 × 그 달 세전 예금 금리. biz = 월 사업소득(H3).
     노란우산 적립금: ny_old = 안 넣음(산입 여부 미확인, 기본), ny_old_in = 그해 첫날 적립금을 금융재산에 넣음(r3 M5, 이자는 안 붙음)."""
-    G, dp, rr, out = acc["G"], acc["dp"], acc["dep_r"], {}
+    G, dp, rr, out, h = acc["G"], acc["dp"], acc["dep_r"], {}, P("H70")
     for b, (nps, home, fin0, i0) in ppl.items():
-        psb, TX, DW, cv, sv, nyb = path(nps)
+        psb, TX, DW, cv, sv, nyb, lump = path(nps)
         for k1 in (True, False):
             for k2 in (False, True):
                 for reg, hd in Q("bp_home_ded").items():
                     # 한 해 12개월 합: 시뮬레이션 예금 f(이자 붙음), 금융재산 고유 + f + extra, 월 연금 pen. 세 쪽 모두 같은 nps·biz(이 람다 하나로만 계산)
-                    yr = lambda pen, f, extra=0.0: basic_pension(nps, pen, home, fin0 + (f + extra)[:, None], hd,
-                                                                 i0 + f[:, None] * rr[:, 12 * kk:12 * kk + 12], biz)[0].sum(axis=1)
+                    # 8-2 term = (개월, 해석, 만기 해 k mod): 고유 금융재산 이자는 만기 해에만 term_income, 다른 해 0. 시뮬레이션 예금 이자는 그대로.
+                    # lag = 1(감사 M1 민감도, 75세 판만): 시뮬레이션 예금 이자를 한 해 늦게(kk − 1년의 잔액 × 그해 금리) 소득으로. 0이면 같은 해(기준).
+                    own = lambda: i0 if not term else (term_income(i0 * term[0], term[0], term[1]) if kk % 3 == term[2] else 0.0)
+                    yr = lambda pen, f, extra=0.0, fi=None: basic_pension(nps, pen, home, fin0 + (f + extra)[:, None], hd,
+                                                                          own() + (f if fi is None else fi)[:, None] * rr[:, 12 * (kk - lag):12 * (kk - lag) + 12], biz)[0].sum(axis=1)
+                    # 그해 첫날 시뮬레이션 예금(연금저축 쪽, 예금 쪽, 노란우산 쪽). 8-1: 노란우산 70세 지급금 예금 포함
+                    sides = lambda q: (DW[:, q - WD0] + side_at(G, 12 * q - 1, k * cv), dp[:, 12 * q - 1],
+                                       side_at(G, 12 * q - 1, k * sv) + (lump * G[:, 12 * q - 1] / G[:, h - 1] if 12 * q - 1 >= h - 1 else 0.0))
                     tot = {"ps": 0.0, "dep": 0.0, "ny_old": 0.0, "ny_old_in": 0.0}
-                    for kk in range(BP_K0, BP_K0 + 6):
+                    for kk in range(BP_K0, rr.shape[1] // 12):
                         j, t = kk - WD0, 12 * kk - 1
                         pen = ((TX[:, j] if k1 else W[:, j]) / 12)[:, None]
-                        sn = side_at(G, t, k * sv)
-                        tot["ps"] = tot["ps"] + yr(pen, DW[:, j] + side_at(G, t, k * cv), R[:, j] if k2 else 0.0)
-                        tot["dep"] = tot["dep"] + yr(0.0, dp[:, t])
-                        tot["ny_old"] = tot["ny_old"] + yr(0.0, sn)
-                        tot["ny_old_in"] = tot["ny_old_in"] + yr(0.0, sn, acc["ny_old"][:, t])
+                        (fp, fd, sn), (lp, ld, ln) = sides(kk), (sides(kk - lag) if lag else (None,) * 3)
+                        tot["ps"] = tot["ps"] + yr(pen, fp, R[:, j] if k2 else 0.0, lp)
+                        tot["dep"] = tot["dep"] + yr(0.0, fd, 0.0, ld)
+                        tot["ny_old"] = tot["ny_old"] + yr(0.0, sn, 0.0, ln)
+                        tot["ny_old_in"] = tot["ny_old_in"] + yr(0.0, sn, acc["ny_old"][:, t] if t < h - 1 else 0.0, ln)
                     out[(b, "과세분만" if k1 else "전액", "넣음" if k2 else "안넣음", reg)] = (tot, psb, nyb)
     return out
 
@@ -616,6 +668,46 @@ def _check() -> None:
     acc = accumulate(z[:, :72], z[:, :72], z[:, :72], 3e6, 1.0, o, None, 72)
     e = evaluate(acc, 3e6, 0, 72, "p62", o); Cb = acc["ny_close"][0, -1]
     assert abs(e["ny_close"][0] - (Cb - retire_tax(Cb - 216e6, 72))) < 1e-6 and retire_tax(Cb - 216e6, 72) > 0
+    # 8-1 75세 판(수익 0·예금 금리 0·월 50만·(가)). 연기판: 70세 말 잔액 8,400만 → 2040년 1월 첫 인출 ÷ 10 = 840만, 그 전 0
+    z = np.zeros((1, Q("H75"))); ad = accumulate(z, z, z, 500_000, 1.0, od, None, Q("H75")); W = ad["wd"][1]
+    assert abs(W[0, 9] - 8.4e6) < 1e-6 and not W[0, :9].any() and abs(W[0, 10] - 7.56e7 / 9) < 1e-6
+    #   B·과세분만·K2 넣음(개시 전만): 65~70세 7,999,200(위 손계산) + 71~75세: 공제 0 → 인출 전부 과세제외(연금소득 0), 인출 예금 840만 × 1~5
+    #   → 재산 +28,000·56,000·84,000·112,000·140,000 → 기초연금 293,100·265,100·237,100·209,100·181,100 × 12 = 14,226,000 → 22,225,200
+    v = evaluate(ad, 500_000, 0, Q("H75"), "p70", od, ppl)["bp"][("B", "과세분만", "넣음", "중소도시")][0]
+    assert abs(v["ps"][0] - 22_225_200) < 1e-6
+    #   기본판(감사 H1): 2031~2039년 ÷ 10 … ÷ 2, 2040년부터 다시 ÷ 10, ÷ 9, ÷ 8, ÷ 7, ÷ 6 → 75세 말 잔액 = 2039년 말 잔액 × 9/10 × 8/9 × … × 5/6 = 절반.
+    #   '한꺼번에'(lump75) 민감도: 2040년 ÷ 1 = 잔액 전부, 그 뒤 0. 첫 168개월은 둘 다 70세 판과 같은 적립
+    b, Wh = 0.0, []
+    for kk in range(19):
+        if kk >= WD0:
+            Wh.append(b / (10 - (kk - WD0 if kk < 14 else kk - 14))); b -= Wh[-1]
+        if kk < 14:
+            b += 6e6; b39 = b                                      # b39 = 2039년 말 잔액
+    ab = accumulate(z, z, z, 500_000, 1.0, o, None, Q("H75")); Vb, Wb, _ = ab["wd"]
+    assert np.allclose(Wb[0], Wh, rtol=0, atol=1e-6) and abs(Wb[0, 9] - b39 / 10) < 1e-6 and abs(Vb[0] - b39 / 2) < 1e-6
+    assert np.array_equal(Wb[:, :9], accumulate(z[:, :168], z[:, :168], z[:, :168], 500_000, 1.0, o, None, 168)["wd"][1])
+    al = accumulate(z, z, z, 500_000, 1.0, {**o, "lump75": True}, None, Q("H75"))["wd"]
+    assert al[0][0] == 0 and abs(al[1][0, 9] - b39) < 1e-6 and not al[1][0, 10:].any()
+    #   감사 L1: ★ 칸(K1 전액) 손계산 — 기본판 B (가)·K2 안넣음, 월 10만(수익 0이라 인출액 = 위 Wh ÷ 5)·예금 금리 0. (가)는 공제 0이라 인출 전부 과세제외(세금 0)
+    #   → 인출 예금 = 인출 누계. 해마다 소득인정액 = 2,148,900 + 그해 인출 ÷ 12(K1 전액) + 인출 누계 × 4% ÷ 12
+    #   → 기초연금 = 0(> 247만) 또는 max(247만 − 소득인정액, 34,970), 65~75세 × 12
+    w1 = np.array(Wh) / 5; cw = np.cumsum(w1)
+    exp75 = sum(12 * (0 if ia > 2.47e6 else max(2.47e6 - ia, 34_970)) for ia in (2_148_900 + w1[q - WD0] / 12 + cw[q - WD0] * .04 / 12 for q in range(BP_K0, 19)))
+    a1 = accumulate(z, z, z, 100_000, 1.0, o, None, Q("H75"))
+    v = evaluate(a1, 100_000, 0, Q("H75"), "p70", o, ppl)["bp"][("B", "전액", "안넣음", "중소도시")][0]
+    assert np.allclose(a1["wd"][1][0], w1, rtol=0, atol=1e-6) and abs(v["ps"][0] - exp75) < 1e-6 and exp75 > 0
+    # 8-2 사업안내 인쇄 70쪽 예시: 5년 적금 40개월 해지, 이자 180만 → 공제 40 × 4만 = 160만 → (180만 − 160만) ÷ 12 = 16,666.67원/월.
+    #   '상한' 해석(추가 공제 48만으로 자름)이면 (180만 − 48만) ÷ 12 − 4만 = 70,000 → 예시와 다름
+    ex = lambda rule: float(basic_pension(0, 0.0, 0.0, 0.0, hd, term_income(1.8e6, 40, rule))[1])
+    assert abs(ex("예시") - 2e5 / 12) < 1e-6 and abs(ex("상한") - 70_000) < 1e-6
+    # 시뮬레이션 예금은 12개월 사다리(1년 정기예금, D05)라 추가 공제 해당 없음 → 판 (ii)는 고유 금융재산 이자만 바꿈: 고유 금융재산 0이면 (i)·(ii) 같음
+    assert REC["D05"] == "ladder"
+    eq, dp = rng.normal(.007, .05, (3, 168)), np.abs(rng.normal(.002, .001, (3, 168)))
+    p0 = {b: (n_, h_, 0.0, 0.0) for b, (n_, h_, _, _) in ppl.items()}
+    for oo in (o, od):
+        a8 = accumulate(eq, eq, dp, 300_000, 1.0, oo, None, 168)
+        x, y = (evaluate(a8, 300_000, 5e5, 168, "p70", {**oo, "term": t_}, p0)["bp"] for t_ in (None, Q("term")))
+        assert all(np.array_equal(x[k_][0][c_], y[k_][0][c_]) for k_ in x for c_ in x[k_][0])
     print("cand5p 자가점검 통과")
 
 
