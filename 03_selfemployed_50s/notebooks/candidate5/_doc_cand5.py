@@ -111,7 +111,7 @@ def build(run: Path, md_to_pdf) -> Path:
         "# 후보 5 간단 테스트 결과 — 50대(2026년 만 57세) 자영업자: 연금저축 vs 노란우산공제 vs 예금 (2026-10-27)",
         "",
         f"- 실행: `{run}` · 명세: `후보5_명세_결정표_20261027.md` + **정정 r1** · 사전기준 `후보5_사전기준_20261027.md` · MDE 사전 고정 sha256 `{sha}`.",
-        f"- 문서 생성기 `_doc_cand5.py` sha256(LF) {gsha}…, 생성 시 HEAD {head}. TASIS·MDE 원본 사본: `D:\\pension-lab_data\\raw\\candidate5_20261027\\`, `D:\\pension-lab_data\\results\\candidate5_20261027\\cand5_mde_prerun.csv`(레포 data\\ 폴더는 gitignore).",
+        f"- 문서 생성기 `_doc_cand5.py` sha256(LF) {gsha}…, 생성 시 HEAD {head}. TASIS·MDE 원본 사본: `$PENSION_DATA_ROOT/raw/candidate5_20261027/`, `$PENSION_DATA_ROOT/results/candidate5_20261027/cand5_mde_prerun.csv`(레포 data\\ 폴더는 gitignore).",
         "- 성격: **탐색용 기술**이다. 판정하지 않는다. 비율은 모두 누적 납입 대비다(예: −0.10 = 넣은 돈의 10%만큼 적음).",
         "- 이 문서의 표와 숫자는 `notebooks/candidate5/_doc_cand5.py`가 run 폴더 CSV에서 만들었다. 요약 문장은 `cand5.sentence()` 규칙을 따른다.",
         "- 주의: 규칙이 도착하기 전에 1차 실행(run_0)을 돌려 결과를 먼저 봤다. 일부 결정 후보와 ★ 변경(D10·D17)은 그 뒤에 정해졌다. 정정 r1 1절에 공개했다.",

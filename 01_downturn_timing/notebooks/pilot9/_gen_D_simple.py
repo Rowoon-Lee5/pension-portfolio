@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """D_simple_20261017.ipynb 생성기 — pilot9 D 간단 테스트(하락장에 위험자산 비중을 잠깐 올렸다 되돌리기).
-명세 = D:\\pension-lab_data\\results\\pilot9_20261013\\D_simple_20261017\\SPEC_D_simple_20261017.md + DECISION_LOG 2026-10-17 'pilot9 D 간단 테스트 명세(회원 결정 3건)'(다르면 DL 우선).
+명세 = $PENSION_DATA_ROOT/results/pilot9_20261013/D_simple_20261017/SPEC_D_simple_20261017.md + DECISION_LOG 2026-10-17 'pilot9 D 간단 테스트 명세(회원 결정 3건)'(다르면 DL 우선).
 탐색용 기술만 — 판정 없음. 실행: (cmd) set "PYTHONPATH=" 뒤 set PYTHONIOENCODING=utf-8 & python notebooks\\pilot9\\_gen_D_simple.py
 """
 from __future__ import annotations
@@ -11,20 +11,20 @@ from nbclient import NotebookClient
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from pension_lab import runrecord as rr  # noqa: E402
+from pension_lab import runrecord as rr, paths  # noqa: E402
 
 NB_PATH = ROOT / "notebooks" / "pilot9" / "D_simple_20261017.ipynb"
-OUTD = Path(r"D:\pension-lab_data\results\pilot9_20261013\D_simple_20261017")
-INP = Path(r"D:\pension-lab_data\results\pilot9_20261013\C_real_20261017\inputs")
-FTD = Path(r"D:\pension-lab_data\raw\fund_tdf")
+OUTD = (paths.DATA_ROOT / "results/pilot9_20261013/D_simple_20261017")
+INP = (paths.DATA_ROOT / "results/pilot9_20261013/C_real_20261017/inputs")
+FTD = (paths.DATA_ROOT / "raw/fund_tdf")
 INPUTS = [INP / "C2_components_monthly.csv", INP / "C2_glide_by_remaining_years.csv", INP / "C3_dd_events.csv",
-          Path(r"D:\pension-lab_data\raw\kr_bond_pre2004_20261017\kis_monthly_2001_clean.csv"),
-          Path(r"D:\pension-lab_data\processed\multicountry_returns_20261017.csv"),
+          (paths.DATA_ROOT / "raw/kr_bond_pre2004_20261017/kis_monthly_2001_clean.csv"),
+          (paths.DATA_ROOT / "processed/multicountry_returns_20261017.csv"),
           FTD / "glidepath_disclosed_prospectus.csv", FTD / "glidepath_disclosed_web_kr_others.csv",
-          Path(r"D:\pension-lab_data\results\pilot9_20261013\fee_pclass_20261016\pclass_fee_table.csv"),
-          Path(r"D:\pension-lab_data\raw\equity_global\french\F-F_Research_Data_Factors.csv"),
-          *sorted(Path(r"D:\pension-lab_data\raw\equity_global\french_intl").glob("*.Dat")),
-          Path(r"D:\pension-lab_data\raw\macro_fx_vol\ecos_cpi_long.csv")]
+          (paths.DATA_ROOT / "results/pilot9_20261013/fee_pclass_20261016/pclass_fee_table.csv"),
+          (paths.DATA_ROOT / "raw/equity_global/french/F-F_Research_Data_Factors.csv"),
+          *sorted((paths.DATA_ROOT / "raw/equity_global/french_intl").glob("*.Dat")),
+          (paths.DATA_ROOT / "raw/macro_fx_vol/ecos_cpi_long.csv")]
 nb = nbf.v4.new_notebook(); cells = []
 def md(s): cells.append(nbf.v4.new_markdown_cell(s))
 def code(s): cells.append(nbf.v4.new_code_cell(s))
@@ -206,7 +206,7 @@ md("""## 1. 자료
 - 보수: 5대 평균 C-Pe 총보수(주)·합성총보수(병기), 달력 = ⌊2055 + r⌋ = 2025 + ⌊t/12⌋(2026 이전 = 첫 단계).""")
 code(r"""C = pd.read_csv(INP / "C2_components_monthly.csv", index_col=0, parse_dates=True)
 cpi = io.asset_series("cpi").resample("ME").last().pct_change(fill_method=None)
-kis = pd.read_csv(r"D:\pension-lab_data\raw\kr_bond_pre2004_20261017\kis_monthly_2001_clean.csv", index_col=0, parse_dates=True).KISKTB_TR
+kis = pd.read_csv((paths.DATA_ROOT / "raw/kr_bond_pre2004_20261017/kis_monthly_2001_clean.csv"), index_col=0, parse_dates=True).KISKTB_TR
 kis_r = kis.pct_change(fill_method=None).loc["2001-02":"2004-06"]
 assert len(kis_r) == 41 and kis_r.notna().all() and (kis_r.index == pd.date_range("2001-02-28", "2004-06-30", freq="ME")).all()
 KOS = C.kospi.dropna()                                          # 1980-02~ 코스피 가격 월 수익(실제 역사 경로의 사건 판정)
@@ -234,8 +234,8 @@ FEEM = {k: np.mean([fee_pct(m, FEE_YEAR, col=col, F=FT) for m in MGRS], axis=0) 
 FEEO = {m: {k: fee_pct(m, FEE_YEAR, col=col, F=FT) / 1200 for k, col in (("총보수", "total_fee_pct"), ("합성총보수", "synthetic_pct"))} for m in MGRS}
 # 12사 2055 공시 글라이드: 5대 투자설명서 + 기타 7사 웹 공시(decisions_survey a2_d1_inputs.py와 같은 읽기), 공시 범위 밖은 빈 값
 import re
-pr = pd.read_csv(r"D:\pension-lab_data\raw\fund_tdf\glidepath_disclosed_prospectus.csv"); pr = pr[pr.vintage == 2055]
-wo = pd.read_csv(r"D:\pension-lab_data\raw\fund_tdf\glidepath_disclosed_web_kr_others.csv"); wo = wo[wo["product"].str.contains(r"TDF\s*2055", na=False)].copy()
+pr = pd.read_csv((paths.DATA_ROOT / "raw/fund_tdf/glidepath_disclosed_prospectus.csv")); pr = pr[pr.vintage == 2055]
+wo = pd.read_csv((paths.DATA_ROOT / "raw/fund_tdf/glidepath_disclosed_web_kr_others.csv")); wo = wo[wo["product"].str.contains(r"TDF\s*2055", na=False)].copy()
 def tp(s):
     m = re.search(r"T\s*([+-]\s*\d+|0)", str(s)) or re.search(r"T0", str(s))
     return 0 if m.group(0).replace(" ", "") == "T0" else int(m.group(1).replace(" ", ""))
@@ -354,7 +354,7 @@ md("""## 5. 표 4 — 다국가 보충 (회원 결정 ①: 각국 저축자, 현
 - 안전자산 = 자국 Swinkels 10년 국채 총수익. 물가 = BIS 월 CPI(9개국 모두 2022년까지 있음. OECD 월 CPI는 호주 2024~·일본 ~2021-06뿐). **호주 BIS CPI는 분기 값을 달마다 반복한 계열**(월 변화 0인 달 67%)이다 — d에는 영향 없고 실질 배수에만 영향.
 - 표본 = 나라마다 세 계열이 모두 있는 구간(~2022-12). 규칙 신호 = 그 경로의 위험자산 총수익(월말). 한국(코스피 **가격**)과 다르다.
 - 경로 = `P7.pooled_paths`(나라-월 풀, 평균 블록 120(주)·1·12·240, seed 20261008, N 10,000). 같은 18칸 + 재무장 민감도.""")
-code(r"""MC = pd.read_csv(r"D:\pension-lab_data\processed\multicountry_returns_20261017.csv", dtype={"period": str})
+code(r"""MC = pd.read_csv((paths.DATA_ROOT / "processed/multicountry_returns_20261017.csv"), dtype={"period": str})
 def mcs(src, var, iso):
     x = MC[(MC.source == src) & (MC.variable == var) & (MC.iso3 == iso)]
     return pd.Series(x.value.to_numpy(float), index=pd.to_datetime(x.period) + pd.offsets.MonthEnd(0)).sort_index()

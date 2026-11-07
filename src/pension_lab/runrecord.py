@@ -7,6 +7,8 @@ from __future__ import annotations
 import datetime, hashlib, json, subprocess
 from pathlib import Path
 
+from . import paths
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -40,11 +42,12 @@ def write_run_meta(out_dir, generator: Path, deps=(), extra: str = "") -> None:
     (Path(out_dir) / "run_meta.txt").write_text(txt, encoding="utf-8")
 
 
-EXEC_DIR = Path(r"D:\pension-lab_data\results\ideas\bigdata\executed_notebooks")
+EXEC_DIR = paths.RESULTS / "executed_notebooks"
 
 
 def save_executed(nb, nb_path: Path, exec_dir: Path = EXEC_DIR) -> Path:
-    """실행본을 저장소 노트북과 git 밖 사본 둘 다에 쓴다(nbstripout이 작업트리 출력을 지워도 사본은 남음)."""
+    """실행본을 저장소 노트북과 git 밖 사본 둘 다에 쓴다. 저장소 노트북은 출력이 찍히므로 커밋 전에 nbstripout으로 지운다
+    (README 재현 방법 5, .gitattributes). git 밖 사본은 출력이 남는다."""
     import nbformat as nbf
     n, _ = outputs_sha256(nb)
     assert n > 0, f"실행본 출력 0개(파일을 쓰지 않고 멈춤): {nb_path}"   # 감사 3d D-4: 검사 먼저, 쓰기 나중

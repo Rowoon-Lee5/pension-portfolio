@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """I1_simple_20261017.ipynb 생성기 — pilot10 I1 '하락장에 줄일까·그대로 둘까·더 담을까' 간단 테스트.
-명세 = D:\\pension-lab_data\\results\\pilot10_20261017\\I1_cut_hold_add\\SPEC_I1_draft_20261017.md + DECISION_LOG 2026-10-17 'pilot10 I1 명세 확정(⬜ 추천대로)'.
+명세 = $PENSION_DATA_ROOT/results/pilot10_20261017/I1_cut_hold_add/SPEC_I1_draft_20261017.md + DECISION_LOG 2026-10-17 'pilot10 I1 명세 확정(⬜ 추천대로)'.
 탐색용 기술만 — 판정 없음. 실행: (cmd) set "PYTHONPATH=" 뒤 set PYTHONIOENCODING=utf-8 & python notebooks\\pilot10\\_gen_I1_simple.py
 """
 from __future__ import annotations
@@ -11,20 +11,20 @@ from nbclient import NotebookClient
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from pension_lab import runrecord as rr  # noqa: E402
+from pension_lab import runrecord as rr, paths  # noqa: E402
 
 NB_PATH = ROOT / "notebooks" / "pilot10" / "I1_simple_20261017.ipynb"
-OUTD = Path(r"D:\pension-lab_data\results\pilot10_20261017\I1_cut_hold_add")
-INP = Path(r"D:\pension-lab_data\results\pilot9_20261013\C_real_20261017\inputs")
-DSIM = Path(r"D:\pension-lab_data\results\pilot9_20261013\D_simple_20261017")
+OUTD = (paths.DATA_ROOT / "results/pilot10_20261017/I1_cut_hold_add")
+INP = (paths.DATA_ROOT / "results/pilot9_20261013/C_real_20261017/inputs")
+DSIM = (paths.DATA_ROOT / "results/pilot9_20261013/D_simple_20261017")
 INPUTS = [INP / "C2_components_monthly.csv", INP / "C2_glide_by_remaining_years.csv",
-          Path(r"D:\pension-lab_data\raw\kr_bond_pre2004_20261017\kis_monthly_2001_clean.csv"),
-          Path(r"D:\pension-lab_data\processed\multicountry_returns_20261017.csv"),
-          Path(r"D:\pension-lab_data\raw\fund_tdf\glidepath_disclosed_prospectus.csv"),
-          Path(r"D:\pension-lab_data\results\pilot9_20261013\fee_pclass_20261016\pclass_fee_table.csv"),
-          Path(r"D:\pension-lab_data\raw\equity_global\french\F-F_Research_Data_Factors.csv"),
-          *sorted(Path(r"D:\pension-lab_data\raw\equity_global\french_intl").glob("*.Dat")),
-          Path(r"D:\pension-lab_data\raw\macro_fx_vol\ecos_cpi_long.csv"), Path(r"D:\pension-lab_data\raw\bond_kr\ecos_cd91_long.csv"),
+          (paths.DATA_ROOT / "raw/kr_bond_pre2004_20261017/kis_monthly_2001_clean.csv"),
+          (paths.DATA_ROOT / "processed/multicountry_returns_20261017.csv"),
+          (paths.DATA_ROOT / "raw/fund_tdf/glidepath_disclosed_prospectus.csv"),
+          (paths.DATA_ROOT / "results/pilot9_20261013/fee_pclass_20261016/pclass_fee_table.csv"),
+          (paths.DATA_ROOT / "raw/equity_global/french/F-F_Research_Data_Factors.csv"),
+          *sorted((paths.DATA_ROOT / "raw/equity_global/french_intl").glob("*.Dat")),
+          (paths.DATA_ROOT / "raw/macro_fx_vol/ecos_cpi_long.csv"), (paths.DATA_ROOT / "raw/bond_kr/ecos_cd91_long.csv"),
           *[DSIM / f for f in ("D_kr_boot.csv", "D_t2_hist.csv", "D_placebo.csv", "D_mc_boot.csv", "pw_block.csv")]]
 nb = nbf.v4.new_notebook(); cells = []
 def md(s): cells.append(nbf.v4.new_markdown_cell(s))
@@ -55,7 +55,7 @@ from pension_lab import pilot7 as P7, pilot9 as P9, pilot10 as P10, io, paths
 from pension_lab.bootstrap import paired_resample_paths
 from arch.bootstrap import optimal_block_length
 pd.set_option("display.width", 250); pd.set_option("display.max_columns", 40); pd.set_option("display.max_rows", 400)
-OUT = Path(r"D:\pension-lab_data\results\pilot10_20261017\I1_cut_hold_add"); OUT.mkdir(parents=True, exist_ok=True)
+OUT = (paths.DATA_ROOT / "results/pilot10_20261017/I1_cut_hold_add"); OUT.mkdir(parents=True, exist_ok=True)
 INP = P9.OUT / "C_real_20261017" / "inputs"; DSIM = P9.OUT / "D_simple_20261017"
 SEED, NP, T = P7.SEED, P7.NP, 360
 MGRS = ["KB", "미래에셋", "삼성", "신한", "한국투자"]
@@ -194,7 +194,7 @@ md("""## 1. 자료 (D와 같은 입력 + CD91)
 code(r"""C = pd.read_csv(INP / "C2_components_monthly.csv", index_col=0, parse_dates=True)
 cpi = io.asset_series("cpi").resample("ME").last().pct_change(fill_method=None)
 cd = io.asset_series("cd91").resample("ME").last(); cash = (1 + cd / 100) ** (1 / 12) - 1
-kis = pd.read_csv(r"D:\pension-lab_data\raw\kr_bond_pre2004_20261017\kis_monthly_2001_clean.csv", index_col=0, parse_dates=True).KISKTB_TR
+kis = pd.read_csv((paths.DATA_ROOT / "raw/kr_bond_pre2004_20261017/kis_monthly_2001_clean.csv"), index_col=0, parse_dates=True).KISKTB_TR
 kis_r = kis.pct_change(fill_method=None).loc["2001-02":"2004-06"]; assert len(kis_r) == 41 and kis_r.notna().all()
 KOS = C.kospi.dropna(); STK = C.stk.dropna()
 bd_b = pd.concat([kis_r, C.bd.loc["2004-07":]])
@@ -282,7 +282,7 @@ print(z.pivot_table(index=["표본", "블록", "팔"], columns=["보수", "납�
 md("""## 5. 표 4 — 다국가 보충 (D와 같은 경로·같은 신호 정의)
 9개국(AUS CAN DEU FRA GBR JPN NOR SWE USA), 자국 주식 = French 현지통화(미국 = F-F Mkt−RF + RF), 국채 = Swinkels 10년 총수익, 물가 = BIS. `P7.pooled_paths` 평균 블록 120(주)·1·12·240.
 줄이기 신호 = 자국 주식 **총수익** 10개월 평균(한국 주 = 코스피 가격과 다름), 옮길 곳 = 자국 10년 국채. 현금 민감도·Faber 원형은 넣지 않는다(명세 ⬜I1-i).""")
-code(r"""MC = pd.read_csv(r"D:\pension-lab_data\processed\multicountry_returns_20261017.csv", dtype={"period": str})
+code(r"""MC = pd.read_csv((paths.DATA_ROOT / "processed/multicountry_returns_20261017.csv"), dtype={"period": str})
 def mcs(src, var, iso):
     x = MC[(MC.source == src) & (MC.variable == var) & (MC.iso3 == iso)]
     return pd.Series(x.value.to_numpy(float), index=pd.to_datetime(x.period) + pd.offsets.MonthEnd(0)).sort_index()

@@ -431,7 +431,7 @@ def tdf_ext_universe() -> pd.DataFrame:
 
 def tdf_ext_nav() -> pd.DataFrame:
     """확장 표본 정제 기준가(설정일~): KOFIA 전 기간 재취득(fetch.kofia_navfull ext, 2026-10-08) → 같은 정제 규칙 v3(notebooks/A_nav_clean_v3 ext)
-    = processed/nav_tdfext_clean_v3_20260928.csv. 2022~ 겹침 구간에서 기존 디폴트옵션 정제본과 일간수익 99.96% 일치(48,280행 중, 6차 감사 재현). wide."""
+    = processed/nav_tdfext_clean_v3_20260928.csv. 2022~ 겹침 구간에서 이전 정제본과 일간수익 99.96% 일치(48,280행 중, 6차 감사 재현). wide."""
     d = pd.read_csv(paths.PROCESSED / "nav_tdfext_clean_v3_20260928.csv", usecols=["date", "fund_code", "segment_id", "nav_clean"], parse_dates=["date"])
     d = d[d["fund_code"].isin(set(tdf_ext_universe()["code"]))].sort_values(["fund_code", "date"])
     # 정제본은 조각(segment_id)끼리 잇지 않는 설계 + 장기 공백(>14일) 뒤 재시작 → 조각 경계를 가로지르면 재설정이 가짜 손실(교보 2050 −14.7% 등).

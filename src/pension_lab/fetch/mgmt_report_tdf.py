@@ -3,7 +3,7 @@
 목적: 운용보고서의 '주요 자산보유 현황'(상위 10종목·자산총액 5% 초과 종목)과 '자산구성현황'을 분기별로 모아
 보유종목 기반 DIY 포트폴리오를 재구성하기 위함. 로그인·CAPTCHA 우회 없음, 요청 간격 ≥2.5초.
 
-저장 위치: D:\\pension-lab_data\\raw\\fund_tdf\\mgmt_reports\\
+저장 위치: $PENSION_DATA_ROOT/raw/fund_tdf/mgmt_reports/
   {manager}\\{code}_{YYYYMMDD 운용기간 말일}.pdf, index_20261009.csv,
   holdings_20261009.csv, assetmix_20261009.csv  (_download_log.jsonl = 원시 다운로드 기록)
 
@@ -50,7 +50,7 @@ import json, os, re, sys, time
 from pathlib import Path
 from urllib.parse import quote, unquote
 
-ROOT = Path(os.environ.get("MGMT_REPORT_ROOT", r"D:\pension-lab_data\raw\fund_tdf\mgmt_reports"))
+ROOT = Path(os.environ.get("MGMT_REPORT_ROOT", Path(os.environ.get("PENSION_DATA_ROOT", ".")) / "raw" / "fund_tdf" / "mgmt_reports"))
 SINCE = "20220101"          # 이 날짜 이후 말일 보고서만 (2023Q4~ 필수, 2022~ 보너스)
 SLEEP = 2.5
 MGR_SLEEP = {"samsung": 15.0, "shinhan": 60.0, "kim": 6.0, "kb": 6.0, "mirae": 6.0}

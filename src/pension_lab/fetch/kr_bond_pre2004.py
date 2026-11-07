@@ -7,7 +7,7 @@ datacenter.hankyung.com/kis-bond 화면이 쓰는 공개 JSON(/data/datafile/sto
   parse  : 17개 지수 × 총수익·순가격 일별 → kis_daily_2001.csv, 월말 → kis_monthly_2001.csv, 결함 → defects.csv.
   compare: 입력 대조만(전략 결과 아님). ① KIS 국고채권 TR vs 기존 실제 TR(DataGuide FBI.KTB.01.2·KRX 프라임·NICE·KAP) 겹침 월수익
            ② KIS vs pilot7._kr_bond_long 합성(2001-01~2004-06) ③ 1997~1998 합성 월수익(실제 자료 없음 표기).
-저장: D:\\pension-lab_data\\raw\\kr_bond_pre2004_20261017\\
+저장: $PENSION_DATA_ROOT/raw/kr_bond_pre2004_20261017/
 실행: cd src && set "PYTHONPATH=." && python -m pension_lab.fetch.kr_bond_pre2004 all
 """
 from __future__ import annotations

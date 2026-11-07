@@ -112,28 +112,3 @@ def load_tdf_nav() -> pd.DataFrame:
     df = pd.read_csv(paths.FUND_TDF / "tdf_nav_kofia.csv")
     df["date"] = pd.to_datetime(df["date"])
     return df.pivot_table(index="date", columns="fund_code", values="nav").sort_index()
-
-
-def load_defaultoption_nav(wide: bool = True):
-    """KOFIA 디폴트옵션(적격) 펀드 일별 기준가.
-
-    fetch.kofia_fund.run() 산출물 nav_defaultoption_kofia.csv 로더.
-    wide=True  -> pivot (date x fund_code) DataFrame
-    wide=False -> long DataFrame[date, fund_code, fund_name, nav, manager]
-    ⚠️ FSS 디폴트옵션 '상품명'(사업자 스킴명)과는 1:1 링크가 없다(코드 주석 참고).
-    """
-    df = pd.read_csv(paths.FUND_TDF / "nav_defaultoption_kofia.csv")
-    df["date"] = pd.to_datetime(df["date"])
-    if not wide:
-        return df.sort_values(["fund_code", "date"]).reset_index(drop=True)
-    return df.pivot_table(index="date", columns="fund_code", values="nav").sort_index()
-
-
-def load_defaultoption_fund_map() -> pd.DataFrame:
-    """KOFIA '적격'(사전지정운용방법 적격=디폴트옵션 편입대상) 펀드 전수 목록 + 표준코드.
-
-    fetch.kofia_fund.run() 산출물 kofia_defaultoption_funds.csv 로더.
-    컬럼: standardCd, shortCd, koreanFundNm, koreanFundShtNm, trustEstDt,
-          manager, managerCd, hit_kw, base_name
-    """
-    return pd.read_csv(paths.FUND_TDF / "kofia_defaultoption_funds.csv")

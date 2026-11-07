@@ -15,8 +15,8 @@ import numpy as np, pandas as pd, nbformat as nbf
 
 ROOT = Path(__file__).resolve().parents[2]
 NB = ROOT / "notebooks" / "pilot9" / "D_simple_20261017.ipynb"
-REF = Path(r"D:\pension-lab_data\results\pilot9_20261013\D_simple_20261017")
-NEW = Path(r"D:\pension-lab_data\results\pilot9_20261013\D_cost_20261106"); NEW.mkdir(parents=True, exist_ok=True)
+REF = Path(os.environ["PENSION_DATA_ROOT"], "results/pilot9_20261013/D_simple_20261017")
+NEW = Path(os.environ["PENSION_DATA_ROOT"], "results/pilot9_20261013/D_cost_20261106"); NEW.mkdir(parents=True, exist_ok=True)
 os.chdir(NB.parent); sys.path.insert(0, str(ROOT / "src")); sys.path.insert(0, str(NB.parent))
 
 src = [c.source for c in nbf.read(NB, as_version=4).cells if c.cell_type == "code"]

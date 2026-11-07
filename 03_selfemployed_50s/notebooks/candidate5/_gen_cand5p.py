@@ -3,7 +3,7 @@
 순서: 자가점검 → F판(F1~F4만, N 끔) 계산 → 동결 결과(run_20261027_0410)와 대조(assert) → 포트폴리오판(N1~N3 켬) 계산 → 결과 문서(md·PDF).
 실행(git bash): PYTHONPATH= PYTHONIOENCODING=utf-8 python notebooks/candidate5/_gen_cand5p.py
 빠른 시험: C5P_QUICK=1 → 격자 셀 4개·부트스트랩 300경로(역사 경로는 전부: 동결 결과와 칸 단위로 대조하려고).
-출력 = D:/pension-lab_data/results/candidate5_portfolio_20261106/{run|quick}_YYYYMMDD_HHMM/ (F/·N/ 하위). 이 폴더 밖에는 쓰지 않는다.
+출력 = $PENSION_DATA_ROOT/results/candidate5_portfolio_20261106/{run|quick}_YYYYMMDD_HHMM/ (F/·N/ 하위). 이 폴더 밖에는 쓰지 않는다.
 """
 from __future__ import annotations
 import datetime, functools, hashlib, json, os, sys, time
@@ -241,7 +241,7 @@ num = lambda df: df.apply(lambda c: c.map(lambda v: "" if pd.isna(v) else (f"{v:
                           if pd.api.types.is_float_dtype(c) else c)
 
 GUIDE = ("**사업안내 기준 칸(★, 값 굵게) = K1 전액, 기본판 K2 안넣음, 연기판 K2 넣음** — 「2026년 기초연금 사업안내」(보건복지부, "
-         "`references/mohw_2026_기초연금_사업안내_발췌_20261107.md`) 인쇄 70~71쪽(조회되는 연금 월 수령액을 그대로 연금소득으로), 인쇄 92~93쪽(연금저축 = '정기 지급액 또는 최종 잔액', "
+         "원문 발췌는 재배포 조건 미확인으로 저장소에 없음, 쪽 번호만) 인쇄 70~71쪽(조회되는 연금 월 수령액을 그대로 연금소득으로), 인쇄 92~93쪽(연금저축 = '정기 지급액 또는 최종 잔액', "
          "개시 뒤에는 연금소득으로만 → 개시 전 잔액만 금융재산). 나머지 K1·K2 칸 = 법 문언 해석(참고).")
 
 
@@ -753,7 +753,7 @@ if __name__ == "__main__":
             "docs/ideas/본연구후보_20261027/후보5_간단테스트/설계서_후보5_포트폴리오판_20261106.md",
             "references/후보5_추가규칙_1차출처_20261106.md", "references/후보5_기초연금_사람3명_근거_20261106.md",
             "references/law_소득세법_47의2_연금소득공제_20261106.md", "references/law_소득세법_50_기본공제_20261107.md",   # R3-M2
-            "references/mohw_2026_기초연금_사업안내_발췌_20261107.md", "references/law_조특법_86의3_노란우산_20261107.md", "references/SOURCES.md"]
+            "references/law_조특법_86의3_노란우산_20261107.md"]   # 사업안내 발췌·SOURCES.md는 공개본에 없어 뺌(쪽 번호만 남김)
     ins = [paths.DATA_ROOT / "processed" / "pilot9_ecos_deposit_rates_monthly.csv", paths.DATA_ROOT / "raw" / "kr_hist_20261016" / "kr_deposit_annual_kostat2015_1945_2014.csv",
            paths.EQUITY_KR / "idx_kospi200.csv", paths.EQUITY_KR / "idx_kospi200_fundamental.csv",       # L13 주식 입력(pilot7가 직접 읽는 파일)
            paths.DATAGUIDE / "dg_econ_divyield_rates_19900101.csv", paths.DATAGUIDE / "dg_kospi_k200_tr_daily_19800104.csv"]

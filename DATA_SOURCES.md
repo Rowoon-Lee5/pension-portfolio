@@ -27,7 +27,7 @@
 
 | 파일 (`03_selfemployed_50s/references/`) | 출처 | 조건 |
 |---|---|---|
-| `law_소득세법_47의2_…`, `law_소득세법_50_…`, `law_소득세법_59의3_…`, `law_소득세법시행령_40의2_…`, `law_조특법_91의18_…`, `candidate5_law_check_…` | 국가법령정보센터 법령 원문(일부는 같은 원문을 전재한 casenote.kr에서 받고 국가법령정보센터 현행 조문과 대조) | 저작권법 제7조(보호받지 못하는 저작물) — 영리 목적 포함 자유 이용. 이 파일은 공식 법령이 아니며 효력은 관보 기준. https://www.law.go.kr/LSW/lawPetitionForm.do?menuId=13&subMenuId=79 |
+| `law_소득세법_47의2_…`, `law_소득세법_50_…`, `law_소득세법_59의3_…`, `law_소득세법시행령_40의2_…`, `law_조특법_86의3_노란우산_…`, `law_조특법_91의18_…`, `candidate5_law_check_…` | 국가법령정보센터 법령 원문(일부는 같은 원문을 전재한 casenote.kr에서 받고 국가법령정보센터 현행 조문과 대조) | 저작권법 제7조(보호받지 못하는 저작물) — 영리 목적 포함 자유 이용. 이 파일은 공식 법령이 아니며 효력은 관보 기준. https://www.law.go.kr/LSW/lawPetitionForm.do?menuId=13&subMenuId=79 |
 | `후보5_*_1차출처_*.md`, `후보5_기초연금_사람3명_근거_*.md` | 작성자 메모(법령·사업안내·노란우산 안내를 읽고 요약한 규칙과 숫자, 출처 주소) | CC BY 4.0(작성자 글). 인용 대상 기관 자료의 원문을 옮기지 않고 요약·쪽 번호만 적었습니다. |
 
 ## 3. 넣지 않은 원자료
@@ -60,12 +60,22 @@ D = DataGuide 유래 여부. '받는 법'에 코드가 있으면 `src/pension_la
 | `processed/multicountry_returns_20261017.csv` | 9개국 국채 총수익·CPI 패널 (연구가 만든 파일; JST·Swinkels(2023)·OECD·BIS·IMF·FRED에서) | 01 D·I1 다국가 | 아니오 | 재료의 조건 미확인·FRED 포함 | 원 연구 저장소 `raw/multicountry_20261017/build_multicountry_20261017.py`(이 저장소에 없음) |
 | `raw/kr_bond_pre2004_20261017/kis_monthly_2001_clean.csv` | KIS채권평가 국고채 총수익지수 2001~2004 (한경 데이터센터) | 01 D·I1 (KR-b) | 아니오 | 조건 미확인 | `fetch/kr_bond_pre2004.py` |
 | `raw/fund_tdf/glidepath_disclosed_prospectus.csv`, `glidepath_disclosed_web_kr_others.csv` | TDF 공시 글라이드패스 | 01 D·I1, 02 T7 | 아니오 | 금융투자협회·운용사 공시: 재배포 조건 없음("All rights reserved"), 공시 문서 저작권은 운용사에 있을 가능성(미검증) | 금융투자협회 전자공시(https://dis.kofia.or.kr) 투자설명서에서 직접 읽음. 받는 코드는 공개 범위 밖 주제와 묶여 있어 넣지 않음 |
-| `raw/fund_tdf/tdf_fee_c_class.csv`, `tdf_fee_underlying_c_class_20261009.csv`, `tdfext_fee_kofia_20261009.csv`, `tdfext_fund_names_kofia_20261008.csv`, `results/.../fee_pclass_20261016/pclass_fee_table.csv` | TDF 보수·펀드명 | 01, 02 | 아니오 | 같은 이유(KOFIA) | `fetch/tdf_fee_extract.py`, `fetch/tdfext_fee_extract.py`(내려받은 간이투자설명서 PDF에서 추출) |
+| `raw/fund_tdf/tdf_fee_c_class.csv`, `tdf_fee_underlying_c_class_20261009.csv`, `tdfext_fee_kofia_20261009.csv`, `tdfext_fund_names_kofia_20261008.csv`, `results/.../fee_pclass_20261016/pclass_fee_table.csv` | TDF 보수·펀드명 | 01, 02 | 아니오 | 같은 이유(KOFIA) | `fetch/tdf_fee_extract.py`, `fetch/tdfext_fee_extract.py`(내려받은 투자설명서 PDF에서 추출). `tdfext_fee_extract.py`의 판독 대조값은 코드에 없고 사용자가 만드는 `raw/fund_tdf/tdfext_fee_expect.csv`에서 읽음(3-3절) |
 | `processed/nav_tdf_clean_v3_20260928.csv`, `nav_tdfext_clean_v3_20260928.csv` | TDF 기준가(정제본) | 02 T7 | 아니오 | 같은 이유(KOFIA) | `fetch/kofia_tdf.py` |
 | `raw/fund_tdf/mgmt_reports/holdings_20261009.csv`, `hedge_ratio_20261011fix.csv`, `krw_share_20261011fix.csv`, `holding_class_map_20261009.csv` | 자산운용보고서 보유내역·헤지비율(분류표는 작성자 수작업) | 02 T7 | 아니오 | 운용사 공시: 재배포 조건 미확인 | `fetch/mgmt_report_tdf.py` |
 | `raw/kr_hist_20261016/kr_deposit_annual_kostat2015_1945_2014.csv` | 장기 예금 금리 연간 1945~2014 | 03 | 아니오 | 통계청 자료로 보이나 KOSIS DB인지 간행물인지 확인 못 함(간행물이면 공공누리 유형 따로) | 통계청 KOSIS(https://kosis.kr) |
 | 「2026년 기초연금 사업안내」 원문 발췌 | 보건복지부 지침 PDF 발췌 | 03 | 아니오 | 게시물에 공공누리 표시 없음 → 사전 협의 필요(https://www.mohw.go.kr/menu.es?mid=a10103010400) | https://www.mohw.go.kr/board.es?mid=a10409020000&bid=0026&list_no=1488765&act=view 첨부 1 |
-| 노란우산 약관·안내문 원문 | 중소기업중앙회 | 03 | 아니오 | 중기중앙회 이용약관: 허가 없는 게시물 사용·인용 금지(https://www.kbiz.or.kr/ko/contents/contents/contents.do?mnSeq=661) | https://www.8899.or.kr (요약·숫자만 메모에 적음) |
+| 노란우산 약관·안내문 원문, 해약환급금 표 전체 | 중소기업중앙회 | 03 | 아니오 | 중기중앙회 이용약관: 허가 없는 게시물 사용·인용 금지(https://www.kbiz.or.kr/ko/contents/contents/contents.do?mnSeq=661). 재배포 조건 미확인 | https://www.8899.or.kr 해약환급금 안내(https://www.8899.or.kr/cmnsCnts/view?menuId=C080403000). 계산 재현에 꼭 필요한 공시 사실값 4개(36·60·72·168회 해약 때 이자 반영 비율 20·30·40·70%)만 `src/pension_lab/cand5p.py`의 `refund_int`, `03_selfemployed_50s/results/N/constants.csv`, `references/후보5_추가규칙_1차출처_20261106.md` 2-4절에 남기고 표 전체는 옮기지 않음 |
+
+### 3-3. TDF 보수 판독 대조값 CSV 만들기 (`tdfext_fee_extract.py`용)
+
+`src/pension_lab/fetch/tdfext_fee_extract.py`는 투자설명서 PDF에서 '합성 총보수·비용'을 자동으로 읽고, 사람이 PDF를 눈으로 읽어 적은 값과 대조합니다. 대조값은 금융투자협회 공시 내용이라(재배포 조건 확인 못 함) 코드에 넣지 않았습니다. 대조하려면 아래 CSV를 직접 만들어 `$PENSION_DATA_ROOT/raw/fund_tdf/tdfext_fee_expect.csv`에 둡니다. 파일이 없으면 대조 없이 추출만 하고 경고를 출력합니다.
+
+1. 금융투자협회 전자공시(https://dis.kofia.or.kr)에서 코드의 `LOC`에 있는 표준코드마다 투자설명서(본문)를 받아 `$PENSION_DATA_ROOT/raw/fund_tdf/prospectus/{표준코드}_T.pdf`로 저장합니다(간이투자설명서는 `_G.pdf`).
+2. 각 PDF의 제2부 '13. 보수 및 수수료 → 나. 집합투자기구에 부과되는 보수 및 비용' 표를 엽니다.
+3. `LOC[표준코드]["periods"]`의 기간마다(기간 머리글 정규식이 첫째 인자, 시작일이 셋째 인자), 그 클래스 행(코드 주석의 '몇 번째 행')의 **'합성 총보수·비용'(%/년)** 값을 표에 적힌 그대로 옮깁니다. 세로형 표(`kind="vert"`)는 '합성 총보수ㆍ비용' 줄의 값입니다.
+4. 열은 `standardCd,start,expect_fee_pct` 세 개, 한 기간에 한 행입니다. `start`는 `LOC`의 시작일 그대로(`OPEN_S`는 `1900-01-01`), 예: `K55203DN8867,2023-04-11,<표의 값>`.
+5. 행 수는 `LOC`의 기간 수(현재 82개)와 같아야 합니다. 값이 PDF 추출값과 다르면 스크립트가 그 표준코드·기간을 적고 멈춥니다.
 
 ## 4. DataGuide 자료 받는 방법
 DataGuide는 에프앤가이드의 유료 엑셀 애드인입니다(대학 도서관 등 기관 라이선스). 자동 수집 코드는 없고, 아래처럼 엑셀에서 받아 **가공하지 않고** 저장합니다. 로더(`src/pension_lab/io.py`의 `load_dg_series`)가 DataGuide 머리말 형식을 읽습니다.

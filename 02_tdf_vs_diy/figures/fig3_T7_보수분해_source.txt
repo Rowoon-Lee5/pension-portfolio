@@ -1,2 +1,2 @@
-D:\pension-lab_data\results\pilot7_20261008\T7_holdings_summary.csv	sha256=ea3950d087f2e7feebeb2eca589fa10195bb95f6c0d4c750622233db2c081540	rows=51
-D:\pension-lab_data\results\pilot7_20261008\T7_holdings_hac.csv	sha256=198ed67ebf6b92782f675566243b73589bab7c58d7176c1a3a9635d661e318c9	rows=24
+02_tdf_vs_diy/results/pilot7/T7_holdings_summary.csv	sha256=ea3950d087f2e7feebeb2eca589fa10195bb95f6c0d4c750622233db2c081540	rows=51
+02_tdf_vs_diy/results/pilot7/T7_holdings_hac.csv	sha256=198ed67ebf6b92782f675566243b73589bab7c58d7176c1a3a9635d661e318c9	rows=24

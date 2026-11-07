@@ -16,9 +16,9 @@ import numpy as np, pandas as pd, nbformat as nbf
 
 ROOT = Path(__file__).resolve().parents[2]
 NB = ROOT / "notebooks" / "pilot10" / "I1_simple_20261017.ipynb"
-REF = Path(r"D:\pension-lab_data\results\pilot10_20261017\I1_cut_hold_add")
+REF = Path(os.environ["PENSION_DATA_ROOT"], "results/pilot10_20261017/I1_cut_hold_add")
 QUICK = os.environ.get("I1C_QUICK") == "1"
-NEW = Path(r"D:\pension-lab_data\results\pilot10_20261017\I1_cost_20261106") / ("_quick" if QUICK else ""); NEW.mkdir(parents=True, exist_ok=True)
+NEW = Path(os.environ["PENSION_DATA_ROOT"], "results/pilot10_20261017/I1_cost_20261106") / ("_quick" if QUICK else ""); NEW.mkdir(parents=True, exist_ok=True)
 os.chdir(NB.parent); sys.path.insert(0, str(ROOT / "src"))
 
 nomagic = lambda s: "\n".join(l for l in s.splitlines() if not l.lstrip().startswith("%"))   # %matplotlib inline

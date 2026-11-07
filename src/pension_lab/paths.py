@@ -1,13 +1,13 @@
 """데이터 경로 한 곳 정의. 하드코딩 금지 — 여기만 고치면 전체 반영.
 
-기본 루트: D:\\pension-lab_data  (환경변수 PENSION_DATA_ROOT로 override)
+루트: 환경변수 PENSION_DATA_ROOT (없으면 이 저장소의 data/ — 공개 원자료만 있음, DATA_SOURCES.md)
 raw/ 는 원자료(불변), processed/ 는 파생, dataguide/ 는 FnGuide 추출본.
 """
 from __future__ import annotations
 import os
 from pathlib import Path
 
-DATA_ROOT = Path(os.environ.get("PENSION_DATA_ROOT", r"D:\pension-lab_data"))
+DATA_ROOT = Path(os.environ.get("PENSION_DATA_ROOT", Path(__file__).resolve().parents[2] / "data"))
 RAW = DATA_ROOT / "raw"
 PROCESSED = DATA_ROOT / "processed"
 DATAGUIDE = DATA_ROOT / "dataguide"
@@ -22,7 +22,6 @@ BOND_GLOBAL = RAW / "bond_global"
 REAL_ESTATE = RAW / "real_estate"
 COMMODITY = RAW / "commodity"
 MACRO = RAW / "macro_fx_vol"
-PENSION_A = RAW / "pension_default_option"
 FUND_TDF = RAW / "fund_tdf"
 
 

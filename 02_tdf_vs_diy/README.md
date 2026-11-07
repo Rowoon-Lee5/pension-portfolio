@@ -22,7 +22,8 @@ TDF(타깃데이트펀드)는 은퇴 시점에 맞춰 주식·채권 비중을 �
 | ~2024 (35개월) | −0.90%p (p 0.25) | −2.71%p (p<0.001) | −1.43%p (p 0.011) |
 | 2025~ (21개월) | −2.90%p (p 0.45) | −2.60%p (p 0.195) | −1.33%p (p 0.51) |
 
-- 보수는 연 1.28%p입니다(겉보수 0.98% + 안에 담은 펀드 보수 0.30%).
+- 비교 6개(기간 3 × 직접 운용 방식 2)의 점추정은 −0.90~−2.90%p이고, 그중 0과 구분되는 것(HAC p<0.05)은 보유내역 2022~26·~2024 두 개뿐입니다. 점추정의 운용사 동일가중 평균과 p값의 HAC 평균차는 계산 방식이 달라 숫자가 조금 다를 수 있습니다.
+- 보수는 연 1.28%p입니다(겉보수 0.98% + 안에 담은 펀드 보수 0.30%). 차이의 하한(0.90%p)이 보수보다 작아, 모든 비교에서 "차이 중 보수가 1.28%p"라고 나눌 수는 없습니다.
 - 보수 외 나머지는 환헤지를 어떻게 가정하느냐에 크게 흔들립니다. 2022~26 보유내역 차이는 전부 헤지로 보면 −2.02%p, 전부 비헤지로 보면 −5.21%p입니다.
 - 운용사별 보수 외 나머지(2022~26)는 KB −2.16%p, 삼성 −2.09%p, 한국투자 +0.26%p로 엇갈렸습니다.
 
@@ -43,4 +44,4 @@ TDF(타깃데이트펀드)는 은퇴 시점에 맞춰 주식·채권 비중을 �
 - 코드: `notebooks/pilot7/T7_TDF_vs_직접.py` (공통 모듈 `pilot7`·`tdf_style`·`glidepath`·`perfstats`·`bootstrap`). 공시 자료를 받는 코드는 `../src/pension_lab/fetch/`(`kofia_tdf.py` 기준가, `tdf_fee_extract.py`·`tdfext_fee_extract.py` 보수, `mgmt_report_tdf.py` 자산운용보고서).
 
 ---
-**English summary.** Nineteen Korean target-date funds from three managers trailed a do-it-yourself replica of the same allocation by 0.9–2.9 percentage points a year over 2022–2026, of which explicit fees account for 1.28 pp. The non-fee remainder (about −1.3 to −1.4 pp with the reported hedge ratios) swings widely with the currency-hedging assumption and across managers. This mirrors the question of Brown & Davies' "Off Target" for the US, but their numbers were not compared because the original paper could not be accessed.
+**English summary.** Across six comparisons (three periods × two replication methods), nineteen Korean target-date funds from three managers had point estimates 0.9–2.9 percentage points a year below a do-it-yourself replica of the same allocation over 2022–2026; only two of the six are distinguishable from zero (HAC p<0.05). Explicit fees are 1.28 pp a year. The non-fee remainder (about −1.3 to −1.4 pp with the reported hedge ratios) swings widely with the currency-hedging assumption and across managers. This mirrors the question of Brown & Davies' "Off Target" for the US, but their numbers were not compared because the original paper could not be accessed.

@@ -1,6 +1,6 @@
 """pilot10 공통 함수 — I1 '하락장에 줄일까·그대로 둘까·더 담을까' (2026-10-17).
 
-명세 = D:\\pension-lab_data\\results\\pilot10_20261017\\I1_cut_hold_add\\SPEC_I1_draft_20261017.md (DL 2026-10-17 'pilot10 I1 명세 확정').
+명세 = $PENSION_DATA_ROOT/results/pilot10_20261017/I1_cut_hold_add/SPEC_I1_draft_20261017.md (DL 2026-10-17 'pilot10 I1 명세 확정').
 pilot9.py는 고치지 않는다(D 규칙 = pilot9.dd_events·dip_on 그대로 사용).
 - 10개월 평균 신호: Faber(2007) PDF 21~22쪽 — 월말 가격 > 10개월 단순평균이면 보유, < 이면 줄임. 같으면 직전 상태 유지(⬜I1-k).
   평균이 없는 처음 n−1개월은 '줄이기 꺼짐'(⬜I1-g). t월 판정 → t+1월 비중(Clare 2017 AAM 14쪽 'subsequent month').

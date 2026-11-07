@@ -2,7 +2,7 @@
 """후보 5 간단 테스트 생성기. 명세 = docs/ideas/본연구후보_20261027/후보5_간단테스트/후보5_명세_결정표_20261027.md (+정정 r1).
 단계: check(자가점검·constants·coverage 틀) → mde(결과 전 MDE, 커밋) → results(격자 전부, run 폴더) → nb(실행본 노트북) → doc(결과 md·PDF).
 실행(git bash): PYTHONPATH= PYTHONIOENCODING=utf-8 python notebooks/candidate5/_gen_cand5.py --stage results
-출력 = D:/pension-lab_data/results/candidate5_20261027/run_YYYYMMDD_HHMM/ (새 실행마다 새 폴더, 기존 폴더 비우지 않음). 판정 없는 기술.
+출력 = $PENSION_DATA_ROOT/results/candidate5_20261027/run_YYYYMMDD_HHMM/ (새 실행마다 새 폴더, 기존 폴더 비우지 않음). 판정 없는 기술.
 """
 from __future__ import annotations
 import argparse, datetime, functools, hashlib, json, subprocess, sys, time
