@@ -410,7 +410,7 @@ def int_alt(N: Path, ppl: dict, rbar: float) -> None:
 
 
 def int_compare(N: Path) -> tuple[pd.DataFrame, bool]:
-    """표 5·5-1·5-2·5-3·5-4·5-5·7-1에 실리는 칸(월 30만 원·주식 100%, 반올림 전 값): N(기준 int_t) 대 N/intalt.
+    """표 5·5-1·5-2·5-3·5-4·5-5·7-1·5-6에 실리는 칸(월 30만 원·주식 100%, 반올림 전 값): N(기준 int_t) 대 N/intalt.
     반환 (표별 요약, 기준을 바꿀 조건 = 손해 건수 바뀐 칸 0 · 차이 중앙값 변화 모두 < 0.01). 바뀐 칸 = N/int_timing_cells.csv."""
     k2s, ix, pn = {"base": "안넣음", "defer": "넣음"}, ["asset", "m", "person", "b", "K1", "K2", "region"], {"base": "기본판", "defer": "연기판"}
 
@@ -439,7 +439,9 @@ def int_compare(N: Path) -> tuple[pd.DataFrame, bool]:
                                                       region=["중소도시"], K1=["전액"], K2=[k2s[pan]], b=["A", "B"])
                                         for pan in PANS for nm in ["i", *TERMS]}, names=["판", "해석"]),
          "표 7-1": lambda R: rd(R / "decomp_bp_p70.csv").groupby(["기준", "b", "K1", "K2", "person"])[       # 이 파일은 중소도시만
-             ["bp_ps", "bp_dep", "bp_ny_old", "bp_ny_old_in"]].median() / (P("H70") * M)}
+             ["bp_ps", "bp_dep", "bp_ny_old", "bp_ny_old_in"]].median() / (P("H70") * M),
+         "표 5-6": lambda R: pd.concat({pn[pan]: hs(R / f"ext80a_{pan}_bp_hist.csv", ["person", "b"], K1=["전액"], K2=[k2s[pan]])   # 감사 L3(2026-11-08)
+                                        for pan in PANS}, names=["판"])}
     rows, cells = [], []
     for nm, f in T.items():
         a, b = f(N), f(N / "intalt"); j = a.join(b, rsuffix="_alt", how="outer")
@@ -455,6 +457,23 @@ def int_compare(N: Path) -> tuple[pd.DataFrame, bool]:
     pd.concat(cells, ignore_index=True).to_csv(N / "int_timing_cells.csv", index=False, encoding="utf-8-sig")
     log(f"이자 시점 대조(기준 {CP.REC['int_t']} 대 {INT_ALT['int_t']}): 기준 바꿀 조건 {ok}\n" + s.to_string(index=False))
     return s, ok
+
+
+STAR = {"예시": "기준(원문 예시: 그해 4월~이듬해 3월만 0)", "1~3월도": "대안 ①(첫해 1~3월도 0)", "없음": "대안 ②(※ 안 씀)"}
+
+
+def star_alt(N: Path, ppl: dict) -> None:
+    """감사 M1(2026-11-08): 65세 첫해 신규 수급자 ※ 해석(cand5p.guide_int star)별 표 5-5 칸(판 (i)·(ii) 5해석 × 기본판·연기판).
+    기준 행 = 이미 있는 bp_stats·defer_bp_stats·term_*, 대안 ①·② = 다시 계산 → N/int_star_alt.csv(bp_stats 열 + ※·판·해석)."""
+    rows = []
+    for pan, flag in PANS.items():
+        for nm in ["i", *TERMS]:
+            f = N / (f"term_{nm}_{pan}_bp_stats.csv" if nm != "i" else {"base": "bp_stats.csv", "defer": "defer_bp_stats.csv"}[pan])
+            rows.append(pd.read_csv(f).assign(**{"※": "예시", "판": pan, "해석": nm}))
+            for s in ("1~3월도", "없음"):
+                o = {**CP.REC, **flag, "int_star": s, **({"term": TERMS[nm]} if nm != "i" else {})}
+                rows.append(CP.bp_stats(CP.run(inp(o), o, P("H70"), "p70", bp=ppl)[1]).assign(**{"※": s, "판": pan, "해석": nm}))
+    d = pd.concat(rows, ignore_index=True); d.to_csv(N / "int_star_alt.csv", index=False, encoding="utf-8-sig"); log(f"N/int_star_alt.csv {len(d)}행")
 
 
 def build_doc(run: Path, rbar: float, period: str) -> Path:
@@ -643,7 +662,7 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
     gtt = gl(sel(pd.read_csv(N / "term_ii_base_bp_stats.csv")), "안넣음")["중소도시"]            # 한계 메우기 감사 M5(회원 승인)
     gia = gl(sel(pd.read_csv(N / "intalt" / "bp_stats.csv")), "안넣음")                          # 표 5-7 이자 시점 반대 판
     guide_l = (f"- **사업안내 기준(K1 전액·기본판 K2 안넣음·연기판 K2 넣음, 표 5의 ★ 칸)에서 사람 B (가)의 연금저축 < 예금(기초연금 포함, 주식 100%·월 30만 원) 손해 경로는 "
-               f"기본판 중소도시 {gbb['중소도시']}(3년 만기 예금으로 보면 {gtt}, 표 5-5; 이자 반영 시점 민감도 — {INT_NAME[INT_ALT['int_t']]} — {gia['중소도시']}, 표 5-7), "
+               f"기본판 중소도시 {gbb['중소도시']}(3년 만기 예금 — 3년치 이자가 만기 뒤 12개월 소득에 몰린다는 연구자 가정 — 으로 보면 {gtt}, 표 5-5; 이자 반영 시점 민감도 — {INT_NAME[INT_ALT['int_t']]} — {gia['중소도시']}, 표 5-7), "
                f"대도시 {gbb['대도시']}다**(농어촌 {gbb['농어촌']}; 연기판 중소도시 {gdd['중소도시']}·대도시 {gdd['대도시']}·농어촌 {gdd['농어촌']}). "
                f"다른 K1·K2 칸은 법 문언 해석(참고)이다. 이자소득은 {INT_NAME[CP.REC['int_t']]} 시점으로 넣었다(2026-11-08 회원 결정). "
                "근거 = 「2026년 기초연금 사업안내」 인쇄 70~71·92~93쪽(표 5 머리말).")
@@ -704,6 +723,20 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
     t57c = c57.assign(**{f"손해(기준 → {alt_s})": [f"{int(a)} → {int(b)}" for a, b in zip(c57.loss_n, c57.loss_n_alt)],
                          f"차이중앙값(기준 → {alt_s})": [f"{f3(a)} → {f3(b)}" for a, b in zip(c57.median_gap, c57.median_gap_alt)]})[
         ["표", *lab, f"손해(기준 → {alt_s})", f"차이중앙값(기준 → {alt_s})"]].fillna("")
+    # 감사 M1: ※ 해석별 표 5-5 칸(int_compare의 표 5-5와 같은 칸: ★·사람 A·B·중소도시·월 30만·자산 A·연금저축 < 예금)
+    sa = pd.read_csv(N / "int_star_alt.csv")
+    sa = sa[(sa.m == M) & (sa.asset == "A") & (sa["쌍"] == "ps<dep") & (sa.region == "중소도시") & (sa.K1 == "전액") & (sa.K2 == sa["판"].map(k2s)) & sa.b.isin(["A", "B"])]
+    sw = sa.pivot_table(index=["판", "해석", "person", "b"], columns="※", values=["n", "loss_n", "median_gap", "bp_gap_median"])
+    assert len(sw) == 60 and sw.notna().all().all(), len(sw)                       # 2판 × 5해석 × 사람 (가)(나)(다) × A·B
+
+    def sline(s):
+        dl, dm = sw["loss_n"][s] != sw["loss_n"]["예시"], pd.concat([(sw[c][s] - sw[c]["예시"]).abs() for c in ("median_gap", "bp_gap_median")], axis=1).max(axis=1)
+        return f"{STAR[s]} 손해 건수 바뀐 칸 {int(dl.sum())}, 차이중앙값·기초연금차 최대 변화 {dm.max():.4f}"
+    bm = sw.loc[("defer", "ii_만기+1년", "가", "B")]
+    star_l = (f"65세 첫해 ※ 해석 민감도(감사 M1; 표 5-5의 {len(sw)}칸 = 판 (i)·(ii) 5해석 × 기본판·연기판 × ★ 칸 사람 A·B (가)(나)(다), 반올림 전, 기준 대비): "
+              + "; ".join(sline(s) for s in ("1~3월도", "없음")) + ". 연기판 (ii) 만기 1년 늦게 사람 B (가): "
+              + ", ".join(f"{STAR[s]} 손해 {frac(bm['loss_n'][s], bm['n'][s])} · 차이중앙값 {f3(bm['median_gap'][s])} · 기초연금차 {f3(bm['bp_gap_median'][s])}" for s in STAR)
+              + f" → 차이중앙값 범위 {f3(bm['median_gap'].min())}~{f3(bm['median_gap'].max())}. 세부 = `N/int_star_alt.csv`.")
     pick = lambda d, **kw: d.loc[np.logical_and.reduce([d[k] == v for k, v in kw.items()])].iloc[0]
     bga = lambda s, pn: pick(t54, 자료=s, 판=pn, 사람="(가)", **{"사람(기초연금)": "B"})
     fill = {"t54": "; ".join(
@@ -938,7 +971,7 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         "'같은 경로' 열 = 같은 경로의 70세 판(표 5 규칙: 70세 금액 + 65~70세 기초연금). 금액 ÷ 누적 납입(70세까지), 기초연금은 액면 합. "
         "'기초연금차' 열 = 경로별 (연금저축 쪽 − 예금 쪽) 기초연금 차의 중앙값이라, 앞 두 열(각각의 중앙값)의 차와 다를 수 있다(감사 L6). 세부 = `N/ext75*.csv`.",
         "",
-        f"⚠ 75세 창도 연기판에 유리할 수 있다: 두 판 모두 75세 말에 연금저축 잔액이 남고({rat_s}, `N/ext75a_rem_ratio.csv`), 62~69세에 꺼내지 않은 연기판 잔액이 더 크다. "
+        f"⚠ 75세 창도 연기판에 유리할 수 있다: 두 판 모두 75세 말에 연금저축 잔액이 남고({rat_s}, `N/ext75a_rem_ratio.csv`), 연기판은 2031~2039년에 꺼내지 않아 잔액이 더 크다. "
         "이 잔액이 76~80세 연금소득으로 깎는 기초연금은 표 5-6((a) 경로만)에 있다.",
         "",
         md_table(pd.DataFrame(t54)),
@@ -974,7 +1007,7 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         "",
         md_table(tpd),
         "",
-        "### 표 5-7. 기초연금 이자소득 반영 시점 민감도 (표 5·5-1·5-2·5-3·5-4·5-5·7-1에 실리는 칸, 반올림 전 값)",
+        "### 표 5-7. 기초연금 이자소득 반영 시점 민감도 (표 5·5-1·5-2·5-3·5-4·5-5·7-1·5-6에 실리는 칸, 반올림 전 값)",
         "",
         f"기준 = {INT_NAME[CP.REC['int_t']]}(2026-11-08 회원 결정, 설계서 9절). 민감도 = {INT_NAME[INT_ALT['int_t']]}. 사업안내 판: 「2026년 기초연금 사업안내」 인쇄 70쪽 표('23년 이자 → '24년 4월~'25년 3월 적용 …)대로 "
         "해 y의 1~3월에 (y − 2)년, 4~12월에 (y − 1)년 이자(연간 이자 ÷ 12)를 넣고, 같은 쪽 ※(요지: 그해 신규 수급(권)자이고 그해 이자소득이 0이면 전년도 이자소득 미반영, 원문 발췌는 저장소에 없음·쪽 번호만)을 "
@@ -988,6 +1021,8 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         "손해 건수가 바뀐 칸:",
         "",
         md_table(t57c),
+        "",
+        star_l,
         "",
         "## 표 6. 연금저축 연금소득(과세분)이 한 해 1,500만 원을 넘는 경로 (N판, 70세 비교, 국민연금 0)",
         "",
@@ -1061,11 +1096,11 @@ if __name__ == "__main__":
     decompose(run / "N", ppl)
     defer_run(run / "N", ppl)
     ext_run(run / "N", ppl, rbar)
-    int_alt(run / "N", ppl, rbar); int_compare(run / "N")
+    int_alt(run / "N", ppl, rbar); int_compare(run / "N"); star_alt(run / "N", ppl)
     guide_check(run / "N" if CP.REC["int_t"] == "same" else run / "N" / "intalt")   # 대조 CSV는 같은 해 판으로 만든 값
     CP.constants_table().to_csv(run / "N" / "constants.csv", index=False, encoding="utf-8-sig")
     mods = [f"src/pension_lab/{m}.py" for m in ("cand5", "cand5p", "pilot7", "pilot9", "lifecycle", "bootstrap", "paths", "runrecord")] + \
-           ["notebooks/candidate5/_gen_cand5.py", "notebooks/candidate5/_doc_cand5.py",
+           ["notebooks/candidate5/_gen_cand5.py", "notebooks/candidate5/_doc_cand5.py", "notebooks/candidate5/_diff_runs_cand5p.py",   # 감사 R2-L2·L4: 비교 도구
             # 감사 r2 M9: 커밋하지 않으므로(회원 지시) 설계서·근거 파일·SOURCES.md의 sha256도 남김
             "docs/ideas/본연구후보_20261027/후보5_간단테스트/설계서_후보5_포트폴리오판_20261106.md",
             "references/후보5_추가규칙_1차출처_20261106.md", "references/후보5_기초연금_사람3명_근거_20261106.md",
@@ -1076,7 +1111,8 @@ if __name__ == "__main__":
            paths.DATAGUIDE / "dg_econ_divyield_rates_19900101.csv", paths.DATAGUIDE / "dg_kospi_k200_tr_daily_19800104.csv"]
     # L13: 채권·현금은 io.asset_series를 거쳐 파일이 여럿이라, 실제로 쓴 월 입력 표(eq·bd·dep) 자체의 해시도 남김
     tabs = {d15: hashlib.sha256(inp({**CP.REC, "D15": d15}).to_csv().encode("utf-8")).hexdigest() for d15 in ("main", "s7")}
-    rr.write_run_meta(run, Path(__file__), mods, f"quick={QUICK}\nfrozen={FROZEN}\n" + "".join(f"input {p} sha256={rr.raw_sha256(p)}\n" for p in ins)
+    rr.write_run_meta(run, Path(__file__), mods, f"quick={QUICK}\nfrozen={FROZEN}\n"
+                      "doc=결과 md를 이 실행에서 만들고 같은 실행에서 html·pdf로 변환(_gen_cand5.md_to_pdf). code_dirty가 clean이 아니면 실행 코드 = 뒤 커밋 중 dep sha256이 같은 커밋\n" + "".join(f"input {p} sha256={rr.raw_sha256(p)}\n" for p in ins)
                       + "".join(f"input_table D15={k} (C.inputs eq·bd·dep, to_csv) sha256={v}\n" for k, v in tabs.items()))
     log(f"문서 {build_doc(run, rbar, period)}")
     log(f"끝 {time.time() - t0:.0f}초")

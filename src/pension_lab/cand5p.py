@@ -147,7 +147,7 @@ LIMITS = {
                                          "사람 고유 금융재산을 3년 만기 정기예금으로 본 판(표 5-5, 설계서 8-2: 만기 해에 이자 한꺼번에, 추가 공제는 사업안내 예시 해석): {t55}",
     "M1 기초연금 이자소득 반영 시점(한계 메우기 감사 → 2026-11-08 회원 결정)": "기준 = 사업안내 인쇄 70쪽 표(행복이음에 조회되는 전년도 이자소득을 4월~이듬해 3월에 적용 → "
                                                 "1~3월 전전년도·4~12월 전년도 이자, 65세 첫해 신규 수급자 ※, 표 5-5 만기 이자는 이듬해 4~12월·그다음 해 1~3월에 9:3으로 나뉨, int_t = 'guide'). "
-                                                "65세 첫해 ※ 해석: 원문 예시대로 그해 4월~이듬해 3월만 0, 1~3월의 전전년도 이자는 반영(예시에 없는 부분, 설계서 9절에 대안). "
+                                                "65세 첫해 ※ 해석: 원문 예시대로 그해 4월~이듬해 3월만 0, 1~3월의 전전년도 이자는 반영(예시에 없는 부분, 설계서 9절에 대안 ①·②; 두 대안으로 다시 계산한 표 5-5 칸 = 표 5-7 아래 한 줄, 설계서 10절). "
                                                 "옛 기준(그해 이자를 그해 소득으로, 연구자 가정) = 표 5-7 민감도. 2026-11-07 회원 규칙(손해 건수 바뀐 칸 0·차이 중앙값 변화 < 0.01이면 기준 변경)은 "
                                                 "만족하지 않았으나 2026-11-08 회원 결정으로 바꿈. 옛 75세 판 '시뮬레이션 예금 이자 1년 늦게' 민감도는 사업안내 시점을 근사하던 것이라 기준이 바뀌며 지움",
     "R3-L5 §51·§59의4": "§51①1 경로우대 추가공제(2039 과세연도)와 §59의4⑨ 표준세액공제 7만 원을 넣지 않음(원문 대조 안 함) — 연금저축 세금을 많게 잡는 보수 방향, 크기 작음",
@@ -429,7 +429,7 @@ def evaluate(acc: dict, m: float, room: float, H: int, mode: str, o: dict, bp: d
     res["n_over1500"] = (TX > Q("pen_limit")).sum(axis=1)
     if bp:
         # ponytail: (나)(다)의 사업소득 = 과세표준 b(하한값, 과세표준 ≤ 소득금액). 실제 소득금액 자료가 생기면 그 값으로 바꿈.
-        res["bp"] = _bp(acc, k, W, R, path, C.base_for(room) / 12, bp, o.get("term"), o.get("int_t", REC["int_t"]))
+        res["bp"] = _bp(acc, k, W, R, path, C.base_for(room) / 12, bp, o.get("term"), o.get("int_t", REC["int_t"]), o.get("int_star", "예시"))
     return res
 
 
@@ -440,15 +440,19 @@ def term_income(total: float, months: int, rule: str) -> float:
     return max(total - (min(extra, Q("term_cap")) if rule == "상한" else extra), 0.0) / 12
 
 
-def guide_int(I: dict, q: int) -> np.ndarray:
+def guide_int(I: dict, q: int, star: str = "예시") -> np.ndarray:
     """사업안내 인쇄 70쪽 표: q년 1~3월 = (q − 2)년 이자, 4~12월 = (q − 1)년 이자. I = {해: 월평균 이자 (n,)}. 반환 (n, 12).
     같은 쪽 ※ 65세 첫해(BP_K0, 신규 수급자)에 그해 이자가 없으면(I[BP_K0] = 0) 전년도(BP_K0 − 1년) 이자 미반영 → 표대로 그 이자가 걸리는
-    BP_K0년 4월~이듬해 3월이 0. 1~3월의 전전년도 이자는 예시('25년 이자 미적용)에 없어 그대로 둠(원문 해석)."""
-    J = {**I, BP_K0 - 1: np.where(I[BP_K0] == 0, 0.0, I[BP_K0 - 1])}
+    BP_K0년 4월~이듬해 3월이 0. star = ※ 해석: "예시"(기준) = 1~3월의 전전년도 이자는 예시('25년 이자 미적용)에 없어 그대로 둠(원문 해석),
+    "1~3월도"(대안 ①) = 첫해 1~3월의 전전년도 이자도 0, "없음"(대안 ②) = ※ 안 씀(표만) — 감사 M1(2026-11-08), 표 5-7 아래 한 줄.
+    I[BP_K0] = 0 조건은 그해 12개월 평균 금리를 써 형식상 그해 안 미래 정보이나, 입력 예금 금리 최솟값이 월 0.000806 > 0(1991-04~2026-08)이라
+    실제로는 그해 첫날 잔액·만기 일정만으로 정해진다(감사 L5, 결과 영향 없음)."""
+    off = {"예시": (BP_K0 - 1,), "1~3월도": (BP_K0 - 2, BP_K0 - 1), "없음": ()}[star]
+    J = {**I, **{y: np.where(I[BP_K0] == 0, 0.0, I[y]) for y in off}}
     return np.repeat(np.column_stack([J[q - 2], J[q - 1]]), [3, 9], axis=1)
 
 
-def _bp(acc, k, W, R, path, biz, ppl, term=None, o_int: str = "guide") -> dict:
+def _bp(acc, k, W, R, path, biz, ppl, term=None, o_int: str = "guide", star: str = "예시") -> dict:
     """65~70세(k=BP_K0..13; 8-1 75세 판은 ..18) 기초연금 합계(월액 12개월치, 액면). 키 (사람, K1, K2, 지역) → ({ps, dep, ny_old, ny_old_in}, 그 사람 국민연금으로 다시 계산한
     연금저축 70세 금액, 같은 국민연금·여력으로 다시 계산한 노란우산 노령 70세 금액(r3 M2)).
     K1 True = 과세 대상분만 소득, False = 받은 연금 전액. K2 True = 연금저축 잔액을 금융재산에 넣음(이자는 안 붙음).
@@ -469,7 +473,7 @@ def _bp(acc, k, W, R, path, biz, ppl, term=None, o_int: str = "guide") -> dict:
         # same(표 5-7 민감도): 그해 이자를 그해 그 달 금리로
         if guide:
             I = [{q: own(q) + S[q][s] * rr[:, 12 * q:12 * q + 12].mean(axis=1) for q in range(WD0, Y)} for s in range(3)]
-            IT = {q: [guide_int(I[s], q) for s in range(3)] for q in range(BP_K0, Y)}
+            IT = {q: [guide_int(I[s], q, star) for s in range(3)] for q in range(BP_K0, Y)}
         else:
             IT = {q: [own(q) + S[q][s][:, None] * rr[:, 12 * q:12 * q + 12] for s in range(3)] for q in range(BP_K0, Y)}
         for k1 in (True, False):
@@ -743,6 +747,9 @@ def _check() -> None:
     #   65세 첫해 ※(그해 이자 0 → 전년도 이자 미반영): 2034년 = 1~3월 2032년 이자(유지), 4~12월 0 / 2035년 1~3월 0, 4~12월 2034년 이자(0)
     I0 = {6: np.r_[5.], 7: np.r_[7.], 8: np.r_[0.], 9: np.r_[4.]}
     assert np.array_equal(guide_int(I0, 8), np.r_[[5.] * 3 + [0.] * 9][None]) and np.array_equal(guide_int(I0, 9), np.zeros((1, 12)))
+    #   대안 ①(첫해 1~3월도 0): 2034년 전부 0, 2035년 0 / 대안 ②(※ 없음): 2034년 = 5·5·5·7×9, 2035년 = 7·7·7·0×9
+    assert np.array_equal(guide_int(I0, 8, "1~3월도"), np.zeros((1, 12))) and np.array_equal(guide_int(I0, 9, "1~3월도"), np.zeros((1, 12)))
+    assert np.array_equal(guide_int(I0, 8, "없음"), np.r_[[5.] * 3 + [7.] * 9][None]) and np.array_equal(guide_int(I0, 9, "없음"), np.r_[[7.] * 3 + [0.] * 9][None])
     assert REC["int_t"] == "guide"                     # 2026-11-08 회원 결정: 사업안내 표가 기준(설계서 9절), 그해 이자 = 표 5-7 민감도
     # 8-2 사업안내 인쇄 70쪽 예시: 5년 적금 40개월 해지, 이자 180만 → 공제 40 × 4만 = 160만 → (180만 − 160만) ÷ 12 = 16,666.67원/월.
     #   '상한' 해석(추가 공제 48만으로 자름)이면 (180만 − 48만) ÷ 12 − 4만 = 70,000 → 예시와 다름
