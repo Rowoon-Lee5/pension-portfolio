@@ -23,7 +23,8 @@ BLUE, GREY, LGREY = "#1F4E8C", "#9AA3AD", "#D3D8DD"
 names = {f.name for f in fm.fontManager.ttflist}
 plt.rcParams.update({"font.family": ["Malgun Gothic" if "Malgun Gothic" in names else "NanumGothic", "DejaVu Sans"],  # DejaVu = '−' 대체
                      "axes.unicode_minus": False, "figure.dpi": 100, "savefig.dpi": 200,
-                     "axes.spines.top": False, "axes.spines.right": False})
+                     "axes.spines.top": False, "axes.spines.right": False,
+                     "svg.hashsalt": "pension"})   # svg id 고정(재실행해도 같은 파일)
 
 
 def read(p):
@@ -37,7 +38,7 @@ read.log = []
 
 def save(fig, name, data, out):
     fig.savefig(out / f"{name}.png")
-    fig.savefig(out / f"{name}.svg")
+    fig.savefig(out / f"{name}.svg", metadata={"Date": None})
     plt.close(fig)
     data.to_csv(out / f"{name}_data.csv", index=False, encoding="utf-8-sig")
     (out / f"{name}_source.txt").write_text("\n".join(read.log) + "\n", encoding="utf-8")

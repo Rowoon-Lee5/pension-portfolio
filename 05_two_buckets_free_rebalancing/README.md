@@ -50,4 +50,4 @@
 ---
 **English summary.** Is a Korean pension savings account always better than a taxable brokerage account? Comparing after-tax outcomes of the same contribution for every historical start month (Korea, 2004– and 1991–), the answer depends on whether the saver gets the tax credit, the asset (Korean equity ETFs are tax-free on gains outside the account), when the money comes out (before 55 vs. as a pension), and what is done with the tax refund. Savers without a credit who withdraw Korean equity before 55 did better in the taxable account; US equity taken as a pension favoured the pension account for every group. The benefit of tax-free rebalancing inside the account was small. The display rule of the decision tree was set after seeing pilot results. Not investment advice.
 
-_생성: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py (숫자는 결과 CSV에서 읽어 자동으로 채움)_
+_생성: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py (본문 숫자는 결과 CSV에서 읽어 자동으로 채움. English summary는 고정 문장이고, 그 숫자는 `check_numbers.py`가 결과 CSV와 대조)_

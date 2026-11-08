@@ -57,7 +57,7 @@ def read(rel, **kw):
 
 def save(fig, name, data):
     for ext in ("png",) if FIG.parent.name == D7 else ("png", "svg"):   # 07 svg는 선 좌표에 공시 글라이드 값이 그대로 남아 뺌(공개 감사 F2)
-        fig.savefig(FIG / f"{name}.{ext}")
+        fig.savefig(FIG / f"{name}.{ext}", metadata={"Date": None} if ext == "svg" else None)
     plt.close(fig)
     data.to_csv(FIG / f"{name}_data.csv", index=False, encoding="utf-8-sig")
     (FIG / f"{name}_source.txt").write_text("\n".join(LOG) + f"\n생성: {D4}/notebooks/portfolio/make_topics_a.py, {GIT}", encoding="utf-8")
@@ -146,7 +146,7 @@ NOTE
 NOTE
 
 ---
-**English summary.** Target-date 2055 funds from Korea's five largest managers follow different disclosed glide paths; held exactly as disclosed, they would end 30 years apart by a factor of about 1.0–1.2 in simulation. But actual returns deviated from a 'disclosed weights × indices − fee' replica by several percentage points a year, and two years of common history can only distinguish annual differences of roughly 9–10 pp. Within the same vintage, a 19-manager panel did not find differences in crash losses explained by the disclosed risky-asset share (across vintages the share does line up with losses). Short return rankings therefore say little about manager differences. Not investment advice.
+**English summary.** Target-date 2055 funds from Korea's five largest managers follow different disclosed glide paths; held exactly as disclosed, they would end 30 years apart by a factor of about 1.0–1.2 in simulation. But actual returns deviated from a 'disclosed weights × indices − fee' replica by several percentage points a year, and two years of common history can only distinguish annual differences of roughly 9–10 pp. Within the same vintage, a 19-manager panel did not find differences in crash losses explained by the disclosed risky-asset share (across vintages the share does line up with losses). Short return rankings may therefore say little about manager differences. Not investment advice.
 """.replace("RUN1", RUN.format(k="t2a", extra=" — 공시 글라이드·보수 입력(`pilot9_20261013/A_simple_20261017/L2_inputs_glide_fee_by_month.csv`, `pilot9_20261013/decisions_survey/D1_glide_2055_annual.csv`)이 저장소에 없어 `PENSION_DATA_ROOT`의 `results/` 아래에 있어야 돕니다")),
 }
 TAIL = {k: v.replace("NOTE", NOTE) for k, v in TAIL.items()}
@@ -157,7 +157,7 @@ def readme(o, title, **sec):
     body = "\n\n".join(f"## {k.replace('_', ' ')}\n\n{v.strip()}" for k, v in sec.items())
     title = f"{o.name[:2]}. " + title.split(". ", 1)[1].replace(" + 5. ", " + ")   # 원 주제 번호 → 이 저장소 폴더 번호
     (o / "README.md").write_text(f"# {title}\n\n{body}\n\n{TAIL[o.name].strip()}\n\n_생성: {D4}/notebooks/portfolio/make_topics_a.py "
-                                 f"(숫자는 결과 CSV에서 읽어 자동으로 채움)_\n", encoding="utf-8")
+                                 f"(본문 숫자는 결과 CSV에서 읽어 자동으로 채움. English summary는 고정 문장이고, 그 숫자는 `check_numbers.py`가 결과 CSV와 대조)_\n", encoding="utf-8")
 
 
 def out(sub):

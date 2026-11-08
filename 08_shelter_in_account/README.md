@@ -12,7 +12,7 @@
 - 해지 비교선 0.835 = 확인월에 잔액 전체에서 16.5%를 떼고 같은 주식에 바로 다시 넣은 경우.
 - **결과 뒤 확인한 설계서 전제 오류(감사 H1)**: 설계서는 이 선을 "해지에 유리한 쪽"이라고 적었지만 틀렸습니다. 피신·보유 쪽에 연금 수령 세금(3.3~5.5%)을 매기지 않았고 16.5%를 세액공제 받지 않은 원금까지 잔액 전체에 매겼으므로 해지에 **불리한** 쪽입니다(일반계좌 세금을 뺀 것만 해지에 유리). 그래서 설계서 판정(0.835 선)은 그대로 두고, 수령세를 넣은 손익분기 0.835 ÷ (1 − τ) = 0.863(τ 3.3%)·0.884(5.5%) 판정을 결과 뒤 민감도로 덧붙였습니다.
 - 자금흐름: 금투협 연금 펀드 순설정(T3a판, TDF)으로 하락장 확인월(2018-10, 2022-06)부터 3·6·12개월 순설정 ÷ 순자산을, 하락장이 아닌 달로만 된 같은 길이 창들과 비교했습니다.
-- 결과: `T6_shelter_events.csv`(사건별), `T6_shelter_summary.csv`(판정), `T6_flow_vs_nonbear.csv`, 그림 `fig_T6_계좌안피신`.
+- 결과: `results/T6_shelter_events.csv`(사건별), `results/T6_shelter_summary.csv`(판정), `results/T6_flow_vs_nonbear.csv`, 그림 `fig_T6_계좌안피신`.
 
 ## 결과
 
@@ -49,7 +49,8 @@
 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 9개국 판정 요약, 한국 사건별 값, 자금흐름 12개월), 읽은 파일 sha256(`_source.txt`).
 - `results/`: `T6_shelter_events.csv`(사건·복귀 규칙·안전자산별 R = 피신 ÷ 보유, 신호월, 피신 개월, 그 기간 주식·안전자산 누적 수익), `T6_shelter_summary.csv`(4칸 판정, 묶음 부트스트랩 구간, 수령세 민감도), `T6_flow_vs_nonbear.csv`(순설정 ÷ 순자산 비율과 비교 창 분위수). 모두 이 주제가 계산한 요약 값이고 월 수익률·지수·기준가·순설정 원값은 없습니다.
-- `docs/설계서_포트폴리오_주제B_20261108.md`: 08~11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문 그대로).
+- `docs/설계서_포트폴리오_주제B_20261108.md`: 08~11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문 그대로). 원문의 드라이브 경로(`D:\…
+esults\…`)는 원 연구 PC의 결과 폴더이고, 이 저장소에서는 각 주제 폴더의 `results/`·`figures/`입니다.
 - 코드: `notebooks/portfolio/make_topics_b.py`(08~11 공용, 계산·그림·README). 하락장 날짜 규칙은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`의 `dd_detail`, 한국 표본은 `../src/pension_lab/pilot7.py`의 `samples()`.
 - 입력(이 저장소에 없음): French 국가별 주식(`fetch/pilot9_global_equity.py`), OECD 3개월 금리·Swinkels 10년 국채(`processed/multicountry_returns_20261017.csv`), 원 연구의 C_multi 사건표(`results/pilot9_20261013/C_multi_20261017/events_monthly.csv`, 재현 확인용), 국내 DataGuide 자료(KOSPI200 TR·국고채 TR·CD91), 금융투자협회 연금 펀드 순설정 묶음(`results/pilot10_20261017/T3_flow/`). 출처와 받는 법은 `../DATA_SOURCES.md`.
 - 실행: 저장소 루트에서 `python 08_shelter_in_account/notebooks/portfolio/make_topics_b.py t6` — 원자료와 원 연구 결과 파일(위 '입력')이 `$PENSION_DATA_ROOT` 아래 원 연구와 같은 경로에 있어야 돕니다(`../DATA_SOURCES.md`). 이 저장소만으로는 돌지 않습니다.
@@ -59,4 +60,4 @@
 ---
 **English summary.** In a bear market, instead of cashing out a Korean pension account (16.5% tax), a saver could switch to a money-market or bond fund inside the account and return after a recovery signal. Across 63 confirmed bear markets in nine developed countries (local currency), returning only after the index regained its previous peak left the median saver with 0.80–0.87 times what holding would have given (90% cluster-bootstrap intervals below 1); returning after a 20% rebound from the low gave 0.90–0.94 times, not distinguishable from holding. Whether switching costs more than the cash-out tax depends on how later pension-income tax is treated: a sensitivity added after seeing the results changes some verdicts. Korean events since 1991 are reported one by one. Fund-flow data cannot separate new contributions from switches. Not investment advice.
 
-_생성: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py (숫자는 결과 CSV에서 읽어 자동으로 채움). 판정 규칙: `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록)_
+_생성: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py (본문 숫자는 결과 CSV에서 읽어 자동으로 채움. English summary는 고정 문장이고, 그 숫자는 `check_numbers.py`가 결과 CSV와 대조). 판정 규칙: `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록)_

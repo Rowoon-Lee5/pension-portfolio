@@ -51,4 +51,4 @@
 ---
 **English summary.** Should a Korean pension-savings holder who needs cash borrow against the account instead of withdrawing? Using a block bootstrap of past monthly returns (Korea 2004–, 1991–; US 1965–) with 2026 tax rules and one broker's loan terms, borrowing for 12 months was usually cheaper than withdrawing tax-deducted money, but close to a coin flip against withdrawing non-deducted principal. Borrowing the full 50% limit carried a margin-shortfall (top-up or forced sale) probability of up to about 9% over 12 months depending on the sample; borrowing 30% or less kept it at 0.2% or below. Figures are resampled history, not forecasts. Not investment advice.
 
-_생성: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py (숫자는 결과 CSV에서 읽어 자동으로 채움)_
+_생성: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py (본문 숫자는 결과 CSV에서 읽어 자동으로 채움. English summary는 고정 문장이고, 그 숫자는 `check_numbers.py`가 결과 CSV와 대조)_

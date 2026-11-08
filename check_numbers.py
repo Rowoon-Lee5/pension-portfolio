@@ -12,7 +12,7 @@
   08~11 결과 숫자(피신 R·구간·판정·사건 수·한국 사건·자금흐름, 글라이드 변경 펀드 수·운용사 줄·가장 큰 차이,
         재매수 판정 수·경계 폭·보류, 원화 30년 비율·MDE·하락 국면)
 다루지 않는 것(이 저장소 CSV로 다시 셀 수 없음): 08 9개국 구간 끝값 P5·P95는 CSV 값을 그대로 씀(부트스트랩 재실행 안 함),
-  09 '변경 9번 중 7번'·국면 수(사후 국면표가 저장소에 없음), 10 '경계 밖으로 16~25%p'(비중 원값을 뺌),
+  09 '변경 9번 중 7번'·국면 수(사후 국면표가 저장소에 없음),
   03 '+0.558~+0.640'·'6,526,097원', 06 단일국 고점 창·Wilson 구간, 07 |t|·패널 기울기, 각 폴더 '한계' 절의 일부 숫자.
 
 실행: python check_numbers.py              (통과하면 폴더별 규칙 수와 'ok')
@@ -516,7 +516,7 @@ def r09(R):
           int(big_.sum()), len(ok), f"{b.d_적립 * 100:.0f}".replace("-", "−"), f"{b.개월:.0f}", len(short_), len(ok))
     R.add("t9", "For {} of the {} the difference appeared only after", cnt("ins"), int(big_.sum()))
     R.add("r", "| TDF {}개 중 처음 계획과 비교할 수 있는 {}개에서 판독 잡음 바닥선 밖 차이는 {}개(가장 큰 차이 로그 {}%, {}개월)였고, 그중 {}개는 판독 방법이 바뀐 뒤에만 차이가 생겨(결과 뒤 구분)",
-          len(T), len(ok), int(big_.sum()), f"{b.d_적립 * 100:+.2f}", b.개월, cnt("ins"))
+          len(T), len(ok), int(big_.sum()), U(f"{b.d_적립 * 100:+.2f}"), int(b.개월), cnt("ins"))
 
 
 # ── 10 ───────────────────────────────────────────────────────────────────────
@@ -555,6 +555,9 @@ def r10(R):
     h = sh[sh.fin == HOLD]
     R.add("t10", "- 판정 보류 {}개는 {} 비교입니다(k = {}). 설계서 규칙으로는 '{}' 판정이었지만",
           len(h), ", ".join(sorted({f"{MN[m]} {b}~{a}" for m, b, a in zip(h.manager, h.기준보고서, h.뒤보고서)})), "·".join(map(str, sorted(set(h.k)))), "·".join(sorted(set(h.pre))))
+    ob_by = (np.maximum(np.maximum(P.lo_Shist - P.g_Shist, P.g_Shist - P.hi_Shist), 0) * 100).set_axis(ob.index)   # 점이 경계 밖으로 나간 폭(%p) = max(lo − g, g − hi, 0)
+    hb = [max(ob_by[(c, b)], ob_by[(c, a)]) for c, b, a in zip(h.code, h.기준보고서, h.뒤보고서)]
+    R.add("t10", "점 추정이 경계 밖으로 {}~{}%p 나가 경계가 성립하지 않았고", f"{min(hb):.0f}", f"{max(hb):.0f}")
     R.add("t10", "같은 비교의 점 추정 변화는 {}~{}%p였습니다.", f"{h.변화_점.min() * 100:+.1f}", f"{h.변화_점.max() * 100:+.1f}")
     dw = (k1("Shist").변화_상 - k1("Shist").변화_하) * 100
     R.add("t10", "변화 경계 폭(1분기 뒤)은 중앙 {}%p라", f"{dw.median():.0f}")
@@ -603,8 +606,8 @@ def r11(R):
     m97 = c[c.고점 != "1994-10"].us.mean()
     R.add("t11", "**하락 국면 {}번(20% 이상 하락 {}번) 모두 원화 미국주식이 국내주식보다 덜 빠졌지만, {}번 중 {}번은 미국주식도 원화로 손실이었습니다.** 원화 미국주식 평균 {}%는 1994~98년 국면(외환위기, {}%) 하나가 끌어올린 것이고, 그 국면을 빼면 {}%입니다.",
           len(c), int(c.하락20이상.sum()), len(c), int((c.us <= 0).sum()), f"{c.us.mean() * 100:+.1f}", f"{c[c.고점 == '1994-10'].us.iloc[0] * 100:+.0f}", f"{m97 * 100:+.1f}")
-    fx = max(rng.loc[p, "max"] for p in ("③", "④"))                          # 비헤지(환노출) 조합만, ⑤ TDF는 0
-    R.add("t11", "about {}% of paths holding only Korean equities ended below inflation-adjusted contributions ({}–{}% across three samples and three block lengths, excluding a 120-month block); mixes with unhedged foreign equities were at 0–{}%.",
+    fx = max(rng.loc[p, "max"] for p in ("③", "④"))                          # 비헤지(환노출) 조합만(⑤ TDF는 국내 비중이 커서 이 범위 밖, 최대 0.02%)
+    R.add("t11", "about {}% of paths holding only Korean equities ended below inflation-adjusted contributions ({}–{}% across three samples and three block settings (automatic, 12-month and 1-month), excluding a 120-month block); mixes with unhedged foreign equities were at 0–{}%.",
           f"{base['①'] * 100:.0f}", p1(rng.loc["①", "min"]), p1(rng.loc["①", "max"]), p1(fx))
     R.add("t11", "In all {} Korean downturns since 1991, US equities in won fell less than Korean equities, but in {} of them", len(c), int((c.us <= 0).sum()))
     R.add("r", "다시 뽑은 경로의 약 {}%가 물가 뺀 원금보다 적었다(표본 3개·블록 3종에 따라 {}~{}%, 블록 120개월 칸을 넣으면 {}~{}%). 겹치지 않는 30년 기간이 {}개뿐이라 조합 사이 차이는 가려낼 수 없었다. 하락 국면 {}번 모두 원화 미국주식이 덜 빠졌지만 {}번은",

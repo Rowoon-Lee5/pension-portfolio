@@ -62,7 +62,7 @@ def save(fig, name, data):
     F = OUT / "figures"
     F.mkdir(parents=True, exist_ok=True)
     for ext in ("png", "svg"):
-        fig.savefig(F / f"{name}.{ext}")
+        fig.savefig(F / f"{name}.{ext}", metadata={"Date": None} if ext == "svg" else None)
     plt.close(fig)
     data.to_csv(F / f"{name}_data.csv", index=False, encoding="utf-8-sig")
     (F / f"{name}_source.txt").write_text("\n".join(LOG) + f"\n생성: {SCRIPT}, {GIT}", encoding="utf-8")
@@ -80,7 +80,7 @@ def csv(df, name, note, drop=()):
 def readme(o, title, **sec):
     body = "\n\n".join(f"## {k.replace('_', ' ')}\n\n{v.strip()}" for k, v in sec.items())
     title = f"{o.name[:2]}. " + title.split(". ", 1)[1]                                  # 원 주제 번호 → 이 저장소 폴더 번호
-    (o / "README.md").write_text(f"# {title}\n\n{body}\n\n{TAIL[o.name].strip()}\n\n_생성: {SCRIPT} (숫자는 결과 CSV에서 읽어 자동으로 채움). "
+    (o / "README.md").write_text(f"# {title}\n\n{body}\n\n{TAIL[o.name].strip()}\n\n_생성: {SCRIPT} (본문 숫자는 결과 CSV에서 읽어 자동으로 채움. English summary는 고정 문장이고, 그 숫자는 `check_numbers.py`가 결과 CSV와 대조). "
                                  f"판정 규칙: {DESIGN}_\n", encoding="utf-8")
 
 
@@ -287,7 +287,7 @@ def t6():
 - 해지 비교선 0.835 = 확인월에 잔액 전체에서 16.5%를 떼고 같은 주식에 바로 다시 넣은 경우.
 - **결과 뒤 확인한 설계서 전제 오류(감사 H1)**: 설계서는 이 선을 "해지에 유리한 쪽"이라고 적었지만 틀렸습니다. 피신·보유 쪽에 연금 수령 세금(3.3~5.5%)을 매기지 않았고 16.5%를 세액공제 받지 않은 원금까지 잔액 전체에 매겼으므로 해지에 **불리한** 쪽입니다(일반계좌 세금을 뺀 것만 해지에 유리). 그래서 설계서 판정(0.835 선)은 그대로 두고, 수령세를 넣은 손익분기 0.835 ÷ (1 − τ) = 0.863(τ 3.3%)·0.884(5.5%) 판정을 결과 뒤 민감도로 덧붙였습니다.
 - 자금흐름: 금투협 연금 펀드 순설정(T3a판, TDF)으로 하락장 확인월(2018-10, 2022-06)부터 3·6·12개월 순설정 ÷ 순자산을, 하락장이 아닌 달로만 된 같은 길이 창들과 비교했습니다.
-- 결과: `T6_shelter_events.csv`(사건별), `T6_shelter_summary.csv`(판정), `T6_flow_vs_nonbear.csv`, 그림 `fig_T6_계좌안피신`.
+- 결과: `results/T6_shelter_events.csv`(사건별), `results/T6_shelter_summary.csv`(판정), `results/T6_flow_vs_nonbear.csv`, 그림 `fig_T6_계좌안피신`.
 """,
         결과="\n".join(f"- {line(s)}." for s in S.itertuples()) + f"""
 - 한국 하락장(사건별, 묶음 구간 없음): 전고점 회복·MMF — {kl('전고점 회복', 'MMF')}. 20% 반등·MMF — {kl('저점 대비 20% 반등', 'MMF')}.
@@ -575,7 +575,7 @@ TDF는 나이에 맞춰 정한 주식 비중(목표)을 유지해야 합니다. 
 - 목표 = 그 보고서 날짜에 유효했던 투자설명서 글라이드(민감도: 2026년 공시).
 - 판정 규칙(계산 전 설계서): 2022-09 저점 이전 마지막 보고서 대비 1·2·4번째 뒤 보고서의 '실제 − 목표' 변화가 경계째 0 위면 "목표 쪽으로 다시 올라옴", 0 아래면 "더 벌어짐", 0을 포함하면 "가려낼 수 없음".
 - **결과 뒤 추가한 규칙(감사 H3)**: 기준·뒤 보고서 중 하나라도 점 추정이 경계 밖이면 그 보고서의 경계가 성립하지 않으므로, 방향 판정을 "판정 보류(경계 불성립)"로 바꿨습니다. 재감사(R1-H1)에서 이 규칙을 저점 뒤 변화에만 쓰고 저점 직전 수준(낮음/높음)에는 쓰지 않은 비대칭을 지적받아, 같은 규칙을 저점 직전 수준에도 적용했습니다. 설계서 판정은 `T10_change_after_trough.csv`의 `판정_설계서`·`기준판정` 열에 그대로 남겼습니다.
-- 결과: `T10_gap_by_report.csv`, `T10_change_after_trough.csv`, 그림 `fig_T10_TDF재매수`.
+- 결과: `results/T10_gap_by_report.csv`, `results/T10_change_after_trough.csv`, 그림 `fig_T10_TDF재매수`.
 """,
         결과=f"""
 - **할 수 있었던 사건은 2022년 하락장(고점 2021-06, 저점 2022-09) 하나**였습니다. 2018년 하락장(저점 2020-03)은 고점 전 보고서가 한 건도 없어 계산하지 못했습니다.
@@ -682,6 +682,7 @@ def t12():
 - 국내주식은 KOSPI200+배당(2011년 이전 배당은 배당수익률로 근사), 미국주식은 S&P500을 원화로 환산했습니다. 환헤지는 CD91 − 미국 T-bill 금리차 근사입니다.
 - 가장 가까운 해외 연구 Anarkulova·Cederburg·O'Doherty(2022, 저자 최종원고)는 선진국 39개국을 나라별 자국 통화 실질 기준으로 봤고 한국 1996~2019도 포함합니다. 같은 저자들의 2022년 11월 논문은 자국 통화 기준 해외주식도 다룹니다. 이 정리의 차별점은 '원화 저축자의 환노출 해외주식 조합'에 한정되며, 정의·표본이 달라 ACO 숫자와 직접 비교하지 않습니다.
 - 하락 국면 20% 이상 표시는 코스피 종합 기준이고 막대는 KOSPI200이라 2011년 국면처럼 어긋나는 곳이 있습니다.
+- 이 저장소에서는 원 계산(1만 경로 재추출)을 다시 돌릴 수 없습니다. 원자료(DataGuide 등)와 판정 단계 파일이 없어, `results/simpletest_T2/`의 동결 결과만 읽습니다.
 """)
     return dict(base=base, rng=rng, r120=r120, c=c, m97=m97)
 
@@ -700,7 +701,8 @@ TAIL = {
 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 9개국 판정 요약, 한국 사건별 값, 자금흐름 12개월), 읽은 파일 sha256(`_source.txt`).
 - `results/`: `T6_shelter_events.csv`(사건·복귀 규칙·안전자산별 R = 피신 ÷ 보유, 신호월, 피신 개월, 그 기간 주식·안전자산 누적 수익), `T6_shelter_summary.csv`(4칸 판정, 묶음 부트스트랩 구간, 수령세 민감도), `T6_flow_vs_nonbear.csv`(순설정 ÷ 순자산 비율과 비교 창 분위수). 모두 이 주제가 계산한 요약 값이고 월 수익률·지수·기준가·순설정 원값은 없습니다.
-- `docs/설계서_포트폴리오_주제B_20261108.md`: 08~11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문 그대로).
+- `docs/설계서_포트폴리오_주제B_20261108.md`: 08~11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문 그대로). 원문의 드라이브 경로(`D:\…
+esults\…`)는 원 연구 PC의 결과 폴더이고, 이 저장소에서는 각 주제 폴더의 `results/`·`figures/`입니다.
 - 코드: `notebooks/portfolio/make_topics_b.py`(08~11 공용, 계산·그림·README). 하락장 날짜 규칙은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`의 `dd_detail`, 한국 표본은 `../src/pension_lab/pilot7.py`의 `samples()`.
 - 입력(이 저장소에 없음): French 국가별 주식(`fetch/pilot9_global_equity.py`), OECD 3개월 금리·Swinkels 10년 국채(`processed/multicountry_returns_20261017.csv`), 원 연구의 C_multi 사건표(`results/pilot9_20261013/C_multi_20261017/events_monthly.csv`, 재현 확인용), 국내 DataGuide 자료(KOSPI200 TR·국고채 TR·CD91), 금융투자협회 연금 펀드 순설정 묶음(`results/pilot10_20261017/T3_flow/`). 출처와 받는 법은 `../DATA_SOURCES.md`.
 - RUN1
@@ -737,7 +739,7 @@ NOTE
 ## 파일
 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 분기 중앙값과 판정 개수), 읽은 파일 sha256(`_source.txt`).
-- `results/`: `T10_gap_by_report.csv`(보고서별 '실제 − 목표' 격차의 점·하한·상한과 점이 경계 밖인지), `T10_change_after_trough.csv`(펀드별 저점 직전 수준과 1·2·4번째 뒤 보고서 변화, 설계서 판정과 결과 뒤 보류 규칙 판정), `T10_pilot8_mismatch.csv`(원 연구 두 계산의 값 차이). 보유내역 원행·비중 값·공시 목표 값은 넣지 않았고 격차만 넣었습니다(비중과 격차를 함께 두면 공시 글라이드 값이 되살아나므로).
+- `results/`: `T10_gap_by_report.csv`(보고서별 '실제 − 목표' 격차의 점·하한·상한과 점이 경계 밖인지), `T10_change_after_trough.csv`(펀드별 저점 직전 수준과 1·2·4번째 뒤 보고서 변화, 설계서 판정과 결과 뒤 보류 규칙 판정), `T10_pilot8_mismatch.csv`(원 연구 두 계산의 값 차이). 보유내역 원행·비중 값·공시 목표 값은 넣지 않았고 격차만 넣었습니다(비중과 격차를 함께 두면 공시 글라이드 값이 되살아나므로). 다만 2026년 공시 대비 격차 열(`g_S2026_own`)은 외부에서 구한 현재 투자설명서 글라이드와 합치면 보고서별 비중과 과거 목표를 되살릴 수 있습니다(이 저장소 파일만으로는 안 됨).
 - 판정 규칙: `../{D8}/docs/설계서_포트폴리오_주제B_20261108.md` 10번.
 - 코드: `../{D8}/notebooks/portfolio/make_topics_b.py`(08~11 공용). 자산운용보고서 받는 코드는 `../src/pension_lab/fetch/mgmt_report_tdf.py`.
 - 입력(이 저장소에 없음): 원 연구가 보유내역에서 만든 보고서별 위험자산 비중(`results/pilot10_20261017/T1_rebuy/T1c_calib_points.csv`, 대조용 `results/pilot8_20261010/T1d_desc/t1d_rows.csv`)과 보고서 날짜의 공시 목표(`results/pilot8_20261010/T1_reduced/t1r_glide_at_reports.csv`). 출처는 `../DATA_SOURCES.md`.
@@ -757,13 +759,13 @@ NOTE
 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`), 읽은 파일 sha256(`_source.txt`).
 - `results/simpletest_T2/`: 원 연구 T2의 동결 결과 중 이 그림·요약이 읽는 것 — `T2_boot_cells.csv`(표본·블록·조합별 30년 손실 경로 비율 등 1만 경로 요약), `T2_cushion_phases.csv`(하락 국면별 국내주식·원화 미국주식 누적 수익), `T2_independent_units.csv`(겹치지 않는 30년 창·실효 독립 단위), `T2_mde.csv`(구별 가능 최소 차이), `SAY_OK_T2.txt`(원 연구 감사 뒤 쓸 수 있는 문장 범위).
-- 코드: `../{D8}/notebooks/portfolio/make_topics_b.py`(그림·README), `notebooks/simpletest/`(원 계산: `_gen_T2.py`가 `T2_30년주식안전성.py`를 노트북으로 만들어 실행, 공통 함수 `_t2_core.py`). 원 계산은 원 연구 폴더 구조와 DataGuide 원자료가 필요해 그대로는 돌지 않습니다(`../DATA_SOURCES.md`).
+- 코드: `../{D8}/notebooks/portfolio/make_topics_b.py`(그림·README), `notebooks/simpletest/`(원 계산: `_gen_T2.py`가 `T2_30년주식안전성.py`를 노트북으로 만들어 실행, 공통 함수 `_t2_core.py`; 판정 단계 `T2_판정r2.py`·`T2_판정r3.py`·`T2_판정r3b.py`도 쓰는데 이 저장소에 없음). 원 계산은 원 연구 폴더 구조와 DataGuide 원자료, 위 판정 단계 파일이 필요해 그대로는 돌지 않습니다(`../DATA_SOURCES.md` 3절, 쓰는 곳 '11(원 T2 계산)'). 코드 주석·상수표의 '회원 지정'은 연구 의뢰인(작성자)이 정한 값이라는 뜻입니다. `_t2_core.py` 자가점검의 `0.7844`는 5대 운용사 2055 공시 글라이드 평균의 30년 전 값 하나입니다(운용사별 값 아님).
 - RUN1
 
 NOTE
 
 ---
-**English summary.** Is "stocks are safe over 30 years" true for a saver who earns and retires in Korean won? Resampling Korean monthly data (1991–2026) into 10,000 thirty-year contribution paths, about 13% of paths holding only Korean equities ended below inflation-adjusted contributions (10.2–26.5% across three samples and three block lengths, excluding a 120-month block); mixes with unhedged foreign equities were at 0–0.5%. With only one non-overlapping 30-year period, differences between mixes cannot be distinguished statistically. In all 11 Korean downturns since 1991, US equities in won fell less than Korean equities, but in 5 of them they also lost money in won. Not investment advice.
+**English summary.** Is "stocks are safe over 30 years" true for a saver who earns and retires in Korean won? Resampling Korean monthly data (1991–2026) into 10,000 thirty-year contribution paths, about 13% of paths holding only Korean equities ended below inflation-adjusted contributions (10.2–26.5% across three samples and three block settings (automatic, 12-month and 1-month), excluding a 120-month block); mixes with unhedged foreign equities were at 0–0.5%. With only one non-overlapping 30-year period, differences between mixes cannot be distinguished statistically. In all 11 Korean downturns since 1991, US equities in won fell less than Korean equities, but in 5 of them they also lost money in won. Not investment advice.
 """.replace("RUN1", RUN.format(k="t12", extra=" — 저장소 `results/simpletest_T2/`만 읽어 원자료 없이 됩니다")),
 }
 TAIL = {k: v.replace("NOTE", NOTE) for k, v in TAIL.items()}

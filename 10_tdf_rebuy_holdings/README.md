@@ -11,7 +11,7 @@ TDF는 나이에 맞춰 정한 주식 비중(목표)을 유지해야 합니다. 
 - 목표 = 그 보고서 날짜에 유효했던 투자설명서 글라이드(민감도: 2026년 공시).
 - 판정 규칙(계산 전 설계서): 2022-09 저점 이전 마지막 보고서 대비 1·2·4번째 뒤 보고서의 '실제 − 목표' 변화가 경계째 0 위면 "목표 쪽으로 다시 올라옴", 0 아래면 "더 벌어짐", 0을 포함하면 "가려낼 수 없음".
 - **결과 뒤 추가한 규칙(감사 H3)**: 기준·뒤 보고서 중 하나라도 점 추정이 경계 밖이면 그 보고서의 경계가 성립하지 않으므로, 방향 판정을 "판정 보류(경계 불성립)"로 바꿨습니다. 재감사(R1-H1)에서 이 규칙을 저점 뒤 변화에만 쓰고 저점 직전 수준(낮음/높음)에는 쓰지 않은 비대칭을 지적받아, 같은 규칙을 저점 직전 수준에도 적용했습니다. 설계서 판정은 `T10_change_after_trough.csv`의 `판정_설계서`·`기준판정` 열에 그대로 남겼습니다.
-- 결과: `T10_gap_by_report.csv`, `T10_change_after_trough.csv`, 그림 `fig_T10_TDF재매수`.
+- 결과: `results/T10_gap_by_report.csv`, `results/T10_change_after_trough.csv`, 그림 `fig_T10_TDF재매수`.
 
 ## 결과
 
@@ -46,7 +46,7 @@ TDF는 나이에 맞춰 정한 주식 비중(목표)을 유지해야 합니다. 
 ## 파일
 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 분기 중앙값과 판정 개수), 읽은 파일 sha256(`_source.txt`).
-- `results/`: `T10_gap_by_report.csv`(보고서별 '실제 − 목표' 격차의 점·하한·상한과 점이 경계 밖인지), `T10_change_after_trough.csv`(펀드별 저점 직전 수준과 1·2·4번째 뒤 보고서 변화, 설계서 판정과 결과 뒤 보류 규칙 판정), `T10_pilot8_mismatch.csv`(원 연구 두 계산의 값 차이). 보유내역 원행·비중 값·공시 목표 값은 넣지 않았고 격차만 넣었습니다(비중과 격차를 함께 두면 공시 글라이드 값이 되살아나므로).
+- `results/`: `T10_gap_by_report.csv`(보고서별 '실제 − 목표' 격차의 점·하한·상한과 점이 경계 밖인지), `T10_change_after_trough.csv`(펀드별 저점 직전 수준과 1·2·4번째 뒤 보고서 변화, 설계서 판정과 결과 뒤 보류 규칙 판정), `T10_pilot8_mismatch.csv`(원 연구 두 계산의 값 차이). 보유내역 원행·비중 값·공시 목표 값은 넣지 않았고 격차만 넣었습니다(비중과 격차를 함께 두면 공시 글라이드 값이 되살아나므로). 다만 2026년 공시 대비 격차 열(`g_S2026_own`)은 외부에서 구한 현재 투자설명서 글라이드와 합치면 보고서별 비중과 과거 목표를 되살릴 수 있습니다(이 저장소 파일만으로는 안 됨).
 - 판정 규칙: `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md` 10번.
 - 코드: `../08_shelter_in_account/notebooks/portfolio/make_topics_b.py`(08~11 공용). 자산운용보고서 받는 코드는 `../src/pension_lab/fetch/mgmt_report_tdf.py`.
 - 입력(이 저장소에 없음): 원 연구가 보유내역에서 만든 보고서별 위험자산 비중(`results/pilot10_20261017/T1_rebuy/T1c_calib_points.csv`, 대조용 `results/pilot8_20261010/T1d_desc/t1d_rows.csv`)과 보고서 날짜의 공시 목표(`results/pilot8_20261010/T1_reduced/t1r_glide_at_reports.csv`). 출처는 `../DATA_SOURCES.md`.
@@ -57,4 +57,4 @@ TDF는 나이에 맞춰 정한 주식 비중(목표)을 유지해야 합니다. 
 ---
 **English summary.** Did Korean target-date funds buy equities back toward their glide-path targets after the 2022 bear-market low? Quarterly holdings reports (three managers, 19 funds, 349 reports) list only the largest holdings, so the risky-asset share can only be bounded. The bound on the change is about 30 percentage points wide (median), and none of the 19 funds showed a distinguishable direction one, two or four quarters after the low. Two quarters after, the rule written before the calculation would have called 3 funds 'gap widened'; these were held back under a rule added after seeing the results, because the point estimate lay outside its own bounds. This reflects the limits of the measurement more than fund behaviour. Not investment advice.
 
-_생성: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py (숫자는 결과 CSV에서 읽어 자동으로 채움). 판정 규칙: `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록)_
+_생성: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py (본문 숫자는 결과 CSV에서 읽어 자동으로 채움. English summary는 고정 문장이고, 그 숫자는 `check_numbers.py`가 결과 CSV와 대조). 판정 규칙: `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록)_
