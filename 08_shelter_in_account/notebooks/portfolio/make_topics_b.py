@@ -746,7 +746,7 @@ NOTE
 NOTE
 
 ---
-**English summary.** Did Korean target-date funds buy equities back toward their glide-path targets after the 2022 bear-market low? Quarterly holdings reports (three managers, 19 funds, 349 reports) list only the largest holdings, so the risky-asset share can only be bounded. The bound on the change is about 30 percentage points wide (median), and none of the 19 funds showed a distinguishable direction (the bounds included zero) one, two or four quarters after the low. Two quarters after, the rule written before the calculation would have called 3 funds 'gap widened'; these were held back under a rule added after seeing the results, because the point estimate lay outside its own bounds. This reflects the limits of the measurement more than fund behaviour. Not investment advice.
+**English summary.** Did Korean target-date funds buy equities back toward their glide-path targets after the 2022 bear-market low? Quarterly holdings reports (three managers, 19 funds, 349 reports) list only the largest holdings, so the risky-asset share can only be bounded. The bound on the change is about 30 percentage points wide (median), and none of the 19 funds showed a distinguishable direction one, two or four quarters after the low. Two quarters after, the rule written before the calculation would have called 3 funds 'gap widened'; these were held back under a rule added after seeing the results, because the point estimate lay outside its own bounds. This reflects the limits of the measurement more than fund behaviour. Not investment advice.
 """.replace("RUN1", RUN.format(k="t10", extra=NEED)),
     D11: f"""
 ## 그림

@@ -566,7 +566,7 @@ def r10(R):
     assert (mm.pe_prev > "2024-12-31").all()
     R.add("t10", "2025년 이후 보고서 {}행이 달랐습니다({}, `T10_pilot8_mismatch.csv`", len(mm), ", ".join(f"{MN[m]} {n}행" for m, n in mm.groupby("manager").size().items()))
     R.add("t10", "(three managers, {} funds, {} reports)", P.code.nunique(), len(P))
-    R.add("t10", "The bound on the change is about {} percentage points wide (median), and none of the {} funds showed a distinguishable direction (the bounds included zero) one, two or four quarters after the low. Two quarters after, the rule written before the calculation would have called {} funds 'gap widened'; these were held back",
+    R.add("t10", "The bound on the change is about {} percentage points wide (median), and none of the {} funds showed a distinguishable direction one, two or four quarters after the low. Two quarters after, the rule written before the calculation would have called {} funds 'gap widened'; these were held back",
           f"{dw.median():.0f}", k1("Shist").code.nunique(), int(((sh.k == 2) & (sh.fin == HOLD) & (sh.pre == DN)).sum()))
     assert not sh.fin.isin([UP, DN]).any() and (sh[sh.fin == HOLD].k == 2).all()
     R.add("r", "분기 보고서 {}개({}개 펀드)로 2022년 하락장 뒤 '실제 − 목표' 변화를 쟀더니 1·2·4분기 뒤 방향(올라옴·벌어짐)이 나온 칸이 {}개였다({}분기 뒤 {}칸은 계산 전 규칙으로는 '{}'이었으나 결과 뒤 추가한 규칙으로 보류). 보고서에 안 실린 몫 때문에 변화 경계 폭이 중앙 {}%p라",
