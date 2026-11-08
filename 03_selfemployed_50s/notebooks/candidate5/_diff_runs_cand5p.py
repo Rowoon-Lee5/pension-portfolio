@@ -3,7 +3,7 @@
 쓰기: python notebooks/candidate5/_diff_runs_cand5p.py <옛 run 폴더> <새 run 폴더> [출력 폴더(기본 = 새 폴더)]
 출력: diff_vs_<옛 폴더 이름>_cells.csv(바뀐 칸) · _summary.csv(파일별 대조 행·한쪽에만 있는 행·바뀐 칸 수·바뀐 열·새 열·없어진 열,
 한쪽 폴더에만 있는 파일 행 — 감사 R2-L1·L2). 이자 시점 기준(N/constants.csv int_t)이 두 run에서 다르면 N/intalt/ 맞바꿈 대조를 양방향으로(감사 L1).
-키 = 아래 KEYS 중 그 파일에 있는 열. 숫자 = 상대차 > 1e-12면 바뀜. 경로 수가 다른 부트스트랩 파일(빠른 시험)은 건너뜀.
+키 = 아래 KEYS 중 그 파일에 있는 열. 숫자 = 상대차 > 1e-12면 바뀜. 경로 수가 다른 부트스트랩 파일(빠른 시험)과 diff_vs_ 파일(이 도구 출력, 요약에 '건너뜀(비교 산출물)')은 건너뜀.
 """
 import json, sys
 from pathlib import Path
@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 KEYS = ["path", "asset", "m", "person", "b", "K1", "K2", "region", "cell", "D", "후보", "비교", "쌍", "블록", "기준", "차이",
-        "폭락달", "H", "파일", "항목", "사람", "세금 그릇", "키", "구간", "단계", "표", "판", "자료", "해석", "해", "※"]
+        "폭락달", "H", "파일", "항목", "사람", "세금 그릇", "키", "구간", "단계", "표", "판", "자료", "해석", "해", "※", "창"]
 BOOT = ("boot_stats.csv", "defer_boot_stats.csv", "boot_p70_m30_gap.csv")
 
 
@@ -20,8 +20,10 @@ def diff(old: Path, new: Path, files=None):
     cells, summ = [], []
     nb = lambda r: json.load(open(r / "N" / "boot_meta.json", encoding="utf-8"))["n_boot"] if (r / "N" / "boot_meta.json").exists() else None
     same_boot = nb(old) == nb(new)
-    ls = lambda r: {p.relative_to(r) for p in r.rglob("*.csv") if not p.name.startswith("diff_vs_")}
+    ls = lambda r: {p.relative_to(r) for p in r.rglob("*.csv")}
     for f in sorted(ls(old) | ls(new) if files is None else map(Path, files)):
+        if f.name.startswith("diff_vs_"):                 # 이 도구의 옛 출력: 비교하지 않고 요약에만(정리 감사 L4)
+            summ.append({"파일": str(f), "비고": "건너뜀(비교 산출물)"}); continue
         if not (new / f).exists() or not (old / f).exists():
             summ.append({"파일": str(f), "비고": "새 파일" if (new / f).exists() else "옛 폴더에만(지운 파일)"}); continue
         if f.name in BOOT and not same_boot:

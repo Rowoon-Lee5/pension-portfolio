@@ -324,15 +324,19 @@ EXT_SENS = {"lump": ("base", {"lump75": True})}
 TERMS = {"ii": CP.Q("term"), "ii_만기+1년": (36, "예시", 1), "ii_만기+2년": (36, "예시", 2), "ii_상한": (36, "상한", 0)}   # 8-2, 판 (i) = 기존 bp_stats
 
 
+def ext_inputs(rbar: float) -> tuple[pd.DataFrame, pd.DataFrame, list]:
+    """8-1 입력: 실제 자료 r, (b)용 r_b(자료 끝 뒤 75세까지 주식·채권·예금 모두 r̄), 70세 비교 경로 시작 연도 st70."""
+    H, h, r = CP.Q("H75"), P("H70"), inp(CP.REC)
+    fut = pd.date_range(r.index[-1] + pd.offsets.MonthEnd(1), periods=H - h, freq="ME")
+    return r, pd.concat([r, pd.DataFrame(rbar, index=fut, columns=r.columns)]), [s for s in C.starts(r, CP.REC) if r.index.get_loc(s) + h <= len(r)]
+
+
 def ext_run(out: Path, ppl: dict, rbar: float, x: dict = {}) -> None:
     """설계서 8절. 8-1 75세 판: (a) 228개월 실제 자료가 있는 시작 연도만, (b) 70세 비교 경로 전부 + 자료 끝 뒤 달은 주식·채권·예금 모두 r̄.
     (b)에서 (a)와 겹치는 경로는 (a)와 같은 값인지 대조. 80세 판(표 5-6): (a)만. 8-2 3년 정기예금 판(65~70세 창): TERMS × 기본·연기판.
     x = 덧붙일 스위치(이자 시점 대조판 int_alt; 그때는 EXT_SENS 민감도와 잔액 비율을 건너뜀)."""
-    H, h, r = CP.Q("H75"), P("H70"), inp(CP.REC)
-    st70 = [s for s in C.starts(r, CP.REC) if r.index.get_loc(s) + h <= len(r)]
+    H, h = CP.Q("H75"), P("H70"); r, r_b, st70 = ext_inputs(rbar)
     npath = lambda n: sum(r.index.get_loc(s) + n <= len(r) for s in C.starts(r, CP.REC))   # 실제 자료가 n개월 있는 시작 연도 수
-    fut = pd.date_range(r.index[-1] + pd.offsets.MonthEnd(1), periods=H - h, freq="ME")
-    r_b = pd.concat([r, pd.DataFrame(rbar, index=fut, columns=r.columns)])
     save = lambda d, name: (d.to_csv(out / name, index=False, encoding="utf-8-sig"), log(f"{out.name}/{name} {len(d)}행"))
     k2m = lambda d: d.assign(K2뜻="넣음 = 개시 전 잔액만(사업안내 92~93쪽), 표 5의 '넣음'과 다름")   # 감사 L3
     kh = ["path", "asset", "m", "person"]
@@ -410,7 +414,7 @@ def int_alt(N: Path, ppl: dict, rbar: float) -> None:
 
 
 def int_compare(N: Path) -> tuple[pd.DataFrame, bool]:
-    """표 5·5-1·5-2·5-3·5-4·5-5·7-1·5-6에 실리는 칸(월 30만 원·주식 100%, 반올림 전 값): N(기준 int_t) 대 N/intalt.
+    """표 5·5-1·5-2·5-3·5-4·5-5·5-6·7-1에 실리는 칸(월 30만 원·주식 100%, 반올림 전 값): N(기준 int_t) 대 N/intalt.
     반환 (표별 요약, 기준을 바꿀 조건 = 손해 건수 바뀐 칸 0 · 차이 중앙값 변화 모두 < 0.01). 바뀐 칸 = N/int_timing_cells.csv."""
     k2s, ix, pn = {"base": "안넣음", "defer": "넣음"}, ["asset", "m", "person", "b", "K1", "K2", "region"], {"base": "기본판", "defer": "연기판"}
 
@@ -438,10 +442,10 @@ def int_compare(N: Path) -> tuple[pd.DataFrame, bool]:
          "표 5-5": lambda R: pd.concat({(pn[pan], nm): st(R / (f"term_{nm}_{pan}_bp_stats.csv" if nm != "i" else {"base": "bp_stats.csv", "defer": "defer_bp_stats.csv"}[pan]),
                                                       region=["중소도시"], K1=["전액"], K2=[k2s[pan]], b=["A", "B"])
                                         for pan in PANS for nm in ["i", *TERMS]}, names=["판", "해석"]),
-         "표 7-1": lambda R: rd(R / "decomp_bp_p70.csv").groupby(["기준", "b", "K1", "K2", "person"])[       # 이 파일은 중소도시만
-             ["bp_ps", "bp_dep", "bp_ny_old", "bp_ny_old_in"]].median() / (P("H70") * M),
          "표 5-6": lambda R: pd.concat({pn[pan]: hs(R / f"ext80a_{pan}_bp_hist.csv", ["person", "b"], K1=["전액"], K2=[k2s[pan]])   # 감사 L3(2026-11-08)
-                                        for pan in PANS}, names=["판"])}
+                                        for pan in PANS}, names=["판"]),
+         "표 7-1": lambda R: rd(R / "decomp_bp_p70.csv").groupby(["기준", "b", "K1", "K2", "person"])[       # 이 파일은 중소도시만
+             ["bp_ps", "bp_dep", "bp_ny_old", "bp_ny_old_in"]].median() / (P("H70") * M)}   # 표 번호 순서(정리 감사 L1)
     rows, cells = [], []
     for nm, f in T.items():
         a, b = f(N), f(N / "intalt"); j = a.join(b, rsuffix="_alt", how="outer")
@@ -462,17 +466,27 @@ def int_compare(N: Path) -> tuple[pd.DataFrame, bool]:
 STAR = {"예시": "기준(원문 예시: 그해 4월~이듬해 3월만 0)", "1~3월도": "대안 ①(첫해 1~3월도 0)", "없음": "대안 ②(※ 안 씀)"}
 
 
-def star_alt(N: Path, ppl: dict) -> None:
-    """감사 M1(2026-11-08): 65세 첫해 신규 수급자 ※ 해석(cand5p.guide_int star)별 표 5-5 칸(판 (i)·(ii) 5해석 × 기본판·연기판).
-    기준 행 = 이미 있는 bp_stats·defer_bp_stats·term_*, 대안 ①·② = 다시 계산 → N/int_star_alt.csv(bp_stats 열 + ※·판·해석)."""
+def star_alt(N: Path, ppl: dict, rbar: float) -> None:
+    """감사 M1(2026-11-08): 65세 첫해 신규 수급자 ※ 해석(cand5p.guide_int star)별 표 5-5 칸(판 (i)·(ii) 5해석 × 기본판·연기판, 창 70세).
+    정리 감사 L2: 표 5-4(75세 (a)·(b))·표 5-6(80세 (a)) 판도(해석 i). 기준 행 = 이미 있는 bp_stats·defer_bp_stats·term_*·ext*_bp_stats,
+    대안 ①·② = 다시 계산 → N/int_star_alt.csv(bp_stats 열 + ※·판·해석·창). 75·80세 판은 기준도 다시 계산해 기존 파일과 같은지 대조."""
     rows = []
     for pan, flag in PANS.items():
         for nm in ["i", *TERMS]:
             f = N / (f"term_{nm}_{pan}_bp_stats.csv" if nm != "i" else {"base": "bp_stats.csv", "defer": "defer_bp_stats.csv"}[pan])
-            rows.append(pd.read_csv(f).assign(**{"※": "예시", "판": pan, "해석": nm}))
+            rows.append(pd.read_csv(f).assign(**{"※": "예시", "판": pan, "해석": nm, "창": "70세"}))
             for s in ("1~3월도", "없음"):
                 o = {**CP.REC, **flag, "int_star": s, **({"term": TERMS[nm]} if nm != "i" else {})}
-                rows.append(CP.bp_stats(CP.run(inp(o), o, P("H70"), "p70", bp=ppl)[1]).assign(**{"※": s, "판": pan, "해석": nm}))
+                rows.append(CP.bp_stats(CP.run(inp(o), o, P("H70"), "p70", bp=ppl)[1]).assign(**{"※": s, "판": pan, "해석": nm, "창": "70세"}))
+    r, r_b, st70 = ext_inputs(rbar)
+    for w, (fn, H, rx, st) in {"75세 (a)": ("ext75a", CP.Q("H75"), r, None), "75세 (b)": ("ext75b", CP.Q("H75"), r_b, st70),
+                               "80세 (a)": ("ext80a", CP.Q("H80"), r, None)}.items():
+        for pan, flag in PANS.items():
+            for s in STAR:
+                o = {**CP.REC, **flag, "int_star": s}; d = CP.bp_stats(CP.run(rx, o, H, "p70", st=st, bp=ppl)[1])
+                if s == "예시":
+                    same(f"star_alt {w} {pan}", pd.read_csv(N / f"{fn}_{pan}_bp_stats.csv").drop(columns="K2뜻"), d, ["asset", "m", "person", "b", "K1", "K2", "region", "쌍"])
+                rows.append(d.assign(**{"※": s, "판": pan, "해석": "i", "창": w}))
     d = pd.concat(rows, ignore_index=True); d.to_csv(N / "int_star_alt.csv", index=False, encoding="utf-8-sig"); log(f"N/int_star_alt.csv {len(d)}행")
 
 
@@ -725,13 +739,18 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         ["표", *lab, f"손해(기준 → {alt_s})", f"차이중앙값(기준 → {alt_s})"]].fillna("")
     # 감사 M1: ※ 해석별 표 5-5 칸(int_compare의 표 5-5와 같은 칸: ★·사람 A·B·중소도시·월 30만·자산 A·연금저축 < 예금)
     sa = pd.read_csv(N / "int_star_alt.csv")
-    sa = sa[(sa.m == M) & (sa.asset == "A") & (sa["쌍"] == "ps<dep") & (sa.region == "중소도시") & (sa.K1 == "전액") & (sa.K2 == sa["판"].map(k2s)) & sa.b.isin(["A", "B"])]
-    sw = sa.pivot_table(index=["판", "해석", "person", "b"], columns="※", values=["n", "loss_n", "median_gap", "bp_gap_median"])
+    sa = sa[(sa.m == M) & (sa.asset == "A") & (sa["쌍"] == "ps<dep") & (sa.region == "중소도시") & (sa.K1 == "전액") & (sa.K2 == sa["판"].map(k2s))]
+    sw = sa[(sa["창"] == "70세") & sa.b.isin(["A", "B"])].pivot_table(index=["판", "해석", "person", "b"], columns="※", values=["n", "loss_n", "median_gap", "bp_gap_median"])
     assert len(sw) == 60 and sw.notna().all().all(), len(sw)                       # 2판 × 5해석 × 사람 (가)(나)(다) × A·B
+    sx = sa[sa["창"] != "70세"].pivot_table(index=["창", "판", "person", "b"], columns="※", values=["loss_n", "median_gap", "bp_gap_median"])
+    assert len(sx) == 54 and sx.notna().all().all(), len(sx)                       # 정리 감사 L2: 3창 × 2판 × 사람 (가)(나)(다) × A·B·C
 
-    def sline(s):
+    def sline(s, sw=sw, lab=None):
         dl, dm = sw["loss_n"][s] != sw["loss_n"]["예시"], pd.concat([(sw[c][s] - sw[c]["예시"]).abs() for c in ("median_gap", "bp_gap_median")], axis=1).max(axis=1)
-        return f"{STAR[s]} 손해 건수 바뀐 칸 {int(dl.sum())}, 차이중앙값·기초연금차 최대 변화 {dm.max():.4f}"
+        return f"{lab or STAR[s]} 손해 건수 바뀐 칸 {int(dl.sum())}, 차이중앙값·기초연금차 최대 변화 {dm.max():.4f}"
+    star_x = ("같은 ※ 해석 민감도, 표 5-4(75세)·표 5-6(80세) 판(정리 감사 L2; 창마다 기본판·연기판 × ★ 칸 사람 A·B·C (가)(나)(다) = 18칸, 반올림 전, 기준 대비): "
+              + "; ".join(f"{w} — " + ", ".join(sline(s, sx.xs(w, level="창"), STAR[s].split("(")[0]) for s in ("1~3월도", "없음"))
+                          for w in sx.index.unique("창")) + ". 세부 = `N/int_star_alt.csv`(창 열).")
     bm = sw.loc[("defer", "ii_만기+1년", "가", "B")]
     star_l = (f"65세 첫해 ※ 해석 민감도(감사 M1; 표 5-5의 {len(sw)}칸 = 판 (i)·(ii) 5해석 × 기본판·연기판 × ★ 칸 사람 A·B (가)(나)(다), 반올림 전, 기준 대비): "
               + "; ".join(sline(s) for s in ("1~3월도", "없음")) + ". 연기판 (ii) 만기 1년 늦게 사람 B (가): "
@@ -1007,7 +1026,7 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         "",
         md_table(tpd),
         "",
-        "### 표 5-7. 기초연금 이자소득 반영 시점 민감도 (표 5·5-1·5-2·5-3·5-4·5-5·7-1·5-6에 실리는 칸, 반올림 전 값)",
+        "### 표 5-7. 기초연금 이자소득 반영 시점 민감도 (표 5·5-1·5-2·5-3·5-4·5-5·5-6·7-1에 실리는 칸, 반올림 전 값)",
         "",
         f"기준 = {INT_NAME[CP.REC['int_t']]}(2026-11-08 회원 결정, 설계서 9절). 민감도 = {INT_NAME[INT_ALT['int_t']]}. 사업안내 판: 「2026년 기초연금 사업안내」 인쇄 70쪽 표('23년 이자 → '24년 4월~'25년 3월 적용 …)대로 "
         "해 y의 1~3월에 (y − 2)년, 4~12월에 (y − 1)년 이자(연간 이자 ÷ 12)를 넣고, 같은 쪽 ※(요지: 그해 신규 수급(권)자이고 그해 이자소득이 0이면 전년도 이자소득 미반영, 원문 발췌는 저장소에 없음·쪽 번호만)을 "
@@ -1023,6 +1042,8 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         md_table(t57c),
         "",
         star_l,
+        "",
+        star_x,
         "",
         "## 표 6. 연금저축 연금소득(과세분)이 한 해 1,500만 원을 넘는 경로 (N판, 70세 비교, 국민연금 0)",
         "",
@@ -1076,7 +1097,36 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
     assert not bad, f"금지어 {bad}"
     md = run / f"후보5_포트폴리오판_결과_{'quick_' if QUICK else ''}20261106.md"
     md.write_text(text, encoding="utf-8")
-    return md_to_pdf(md)
+    pdf = md_to_pdf(md); doc_check(md)
+    return pdf
+
+
+def doc_diff(md: str, html: str, pdf: str) -> list[str]:
+    """md → html: 표 수·칸 수·칸마다 숫자 토큰(순서대로) 같음. pdf(텍스트, 공백 지움): md 표의 다섯 자리 이상 숫자가 모두 같은 순서로 있음. 반환 = 문제 목록."""
+    import html as H, re
+    tok = lambda s: re.findall(r"\d[\d,.]*", s)
+    L = md.splitlines(); nt, nh = sum(l.startswith("|---") for l in L), html.count("<table")
+    mc = [tok(c) for l in L if l.startswith("|") and not l.startswith("|---") for c in l.strip()[1:-1].split(" | ")]
+    hc = [tok(H.unescape(re.sub(r"<[^>]+>", "", c))) for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", html, re.S)]
+    pt, i, miss = re.sub(r"\s", "", pdf), 0, []
+    key = [t for c in mc for t in c if len(t) >= 5]
+    for t in key:                                     # 앞 숫자 다음 자리부터 찾기 = 순서까지 대조
+        j = pt.find(t, i); miss += [t] if j < 0 else []; i = i if j < 0 else j + len(t)
+    return ([f"표 수 md {nt} ≠ html {nh}"] if nt != nh else []) + ([f"칸 수 md {len(mc)} ≠ html {len(hc)}"] if len(mc) != len(hc) else []) \
+        + [f"칸 {k} 숫자 md {a} ≠ html {b}" for k, (a, b) in enumerate(zip(mc, hc)) if a != b][:5] \
+        + ([f"pdf 대조 숫자 {len(key)}개뿐"] if len(key) < 100 else []) + ([f"pdf에 없거나 순서가 다른 숫자 {len(miss)}개: {miss[:5]}"] if miss else [])
+
+
+def doc_check(md: Path) -> None:
+    """정리 감사 L3(2026-11-08): html·pdf가 md와 같은 내용인지(doc_diff). 다르면 실행을 멈춘다."""
+    import fitz
+    with fitz.open(md.with_suffix(".pdf")) as d:
+        pdf = "".join(p.get_text() for p in d)
+    txt, html = md.read_text(encoding="utf-8"), md.with_suffix(".html").read_text(encoding="utf-8")
+    bad = doc_diff(txt, html, pdf)
+    assert not bad, "결과 문서 html·pdf ≠ md: " + "; ".join(bad)
+    assert doc_diff(txt, html.replace("<td>", "<td>9", 1), pdf) and doc_diff(txt, html, pdf[:len(pdf) // 2])   # 점검이 바뀐 html·잘린 pdf를 잡는지
+    log(f"문서 대조 통과: 표 {html.count('<table')}개·칸 {html.count('<td>') + html.count('<th>')}개 md = html, pdf 숫자 확인")
 
 
 if __name__ == "__main__":
@@ -1096,7 +1146,7 @@ if __name__ == "__main__":
     decompose(run / "N", ppl)
     defer_run(run / "N", ppl)
     ext_run(run / "N", ppl, rbar)
-    int_alt(run / "N", ppl, rbar); int_compare(run / "N"); star_alt(run / "N", ppl)
+    int_alt(run / "N", ppl, rbar); int_compare(run / "N"); star_alt(run / "N", ppl, rbar)
     guide_check(run / "N" if CP.REC["int_t"] == "same" else run / "N" / "intalt")   # 대조 CSV는 같은 해 판으로 만든 값
     CP.constants_table().to_csv(run / "N" / "constants.csv", index=False, encoding="utf-8-sig")
     mods = [f"src/pension_lab/{m}.py" for m in ("cand5", "cand5p", "pilot7", "pilot9", "lifecycle", "bootstrap", "paths", "runrecord")] + \
