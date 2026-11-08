@@ -1,12 +1,12 @@
 # 자료 출처와 재배포 판정
 
-확인일: 2026-11-07. 아래 재배포 조건은 각 사이트의 공개 약관·저작권 정책을 읽고 정리한 것으로, 법률 자문이 아닙니다.
+확인일: 2026-11-07(04~07 폴더 추가분 2026-11-08). 아래 재배포 조건은 각 사이트의 공개 약관·저작권 정책을 읽고 정리한 것으로, 법률 자문이 아닙니다.
 
 ## 1. 판정 규칙
 1. **에프앤가이드 DataGuide 원자료와 그것을 가공한 원시 표는 넣지 않습니다.** 받는 방법(4절)만 적습니다.
 2. 공공 출처 원자료는 재배포 조건을 확인한 것만 넣고 조건을 적습니다. 조건을 확인하지 못했거나 허락이 필요한 것은 넣지 않고 받는 코드·주소만 둡니다.
 3. 출처가 불명확한 파일은 넣지 않습니다.
-4. 결과 파일(`results/`, `figures/*_data.csv`)은 이 연구가 만든 **요약 통계**(1만 경로의 중앙값·분위수·비율, 검정 통계, 시작 연도별 시뮬레이션 금액)입니다. 원자료 시계열(월 수익률, 지수, 기준가)은 들어 있지 않습니다. 다만 국내 주식·채권 입력이 DataGuide 자료이므로, 결과는 그 자료로 계산한 값입니다.
+4. 결과 파일(`results/`, `figures/*_data.csv`)은 이 연구가 만든 **요약 통계**(1만 경로의 중앙값·분위수·비율, 검정 통계, 시작 연도별 시뮬레이션 금액)입니다. 원자료 시계열(월 수익률, 지수, 기준가)은 들어 있지 않습니다. 다만 국내 주식·채권 입력이 DataGuide 자료이므로, 결과는 그 자료로 계산한 값입니다. 04~07의 `results/`도 같은 요약 표입니다(04 `T1_events.csv`는 약세장 진입 사건별 12개월 수익·최저 한 줄씩, 07 `L1_real_nav_stats.csv`는 실제 기준가로 계산한 운용사별 연수익·변동성·낙폭·적립 배수, `C2_check_index_vs_real_overlap.csv`는 상관·평균차·추적오차). 07 그림 왼쪽 선은 공시 글라이드패스를 그린 것이고, 그 값 표는 넣지 않았습니다(3-2절).
 
 ## 2. 넣은 원자료
 
@@ -59,10 +59,12 @@ D = DataGuide 유래 여부. '받는 법'에 코드가 있으면 `src/pension_la
 | `raw/multicountry_20261017/JSTdatasetR6.xlsx` | Jordà–Schularick–Taylor 거시사 자료 | 01 T4(수준 지표만) | 아니오 | 조건 미확인 | https://www.macrohistory.net/database/ |
 | `processed/multicountry_returns_20261017.csv` | 9개국 국채 총수익·CPI 패널 (연구가 만든 파일; JST·Swinkels(2023)·OECD·BIS·IMF·FRED에서) | 01 D·I1 다국가 | 아니오 | 재료의 조건 미확인·FRED 포함 | 원 연구 저장소 `raw/multicountry_20261017/build_multicountry_20261017.py`(이 저장소에 없음) |
 | `raw/kr_bond_pre2004_20261017/kis_monthly_2001_clean.csv` | KIS채권평가 국고채 총수익지수 2001~2004 (한경 데이터센터) | 01 D·I1 (KR-b) | 아니오 | 조건 미확인 | `fetch/kr_bond_pre2004.py` |
-| `raw/fund_tdf/glidepath_disclosed_prospectus.csv`, `glidepath_disclosed_web_kr_others.csv` | TDF 공시 글라이드패스 | 01 D·I1, 02 T7 | 아니오 | 금융투자협회·운용사 공시: 재배포 조건 없음("All rights reserved"), 공시 문서 저작권은 운용사에 있을 가능성(미검증) | 금융투자협회 전자공시(https://dis.kofia.or.kr) 투자설명서에서 직접 읽음. 받는 코드는 공개 범위 밖 주제와 묶여 있어 넣지 않음 |
-| `raw/fund_tdf/tdf_fee_c_class.csv`, `tdf_fee_underlying_c_class_20261009.csv`, `tdfext_fee_kofia_20261009.csv`, `tdfext_fund_names_kofia_20261008.csv`, `results/.../fee_pclass_20261016/pclass_fee_table.csv` | TDF 보수·펀드명 | 01, 02 | 아니오 | 같은 이유(KOFIA) | `fetch/tdf_fee_extract.py`, `fetch/tdfext_fee_extract.py`(내려받은 투자설명서 PDF에서 추출). `tdfext_fee_extract.py`의 판독 대조값은 코드에 없고 사용자가 만드는 `raw/fund_tdf/tdfext_fee_expect.csv`에서 읽음(3-3절) |
-| `processed/nav_tdf_clean_v3_20260928.csv`, `nav_tdfext_clean_v3_20260928.csv` | TDF 기준가(정제본) | 02 T7 | 아니오 | 같은 이유(KOFIA) | `fetch/kofia_tdf.py` |
+| `raw/fund_tdf/glidepath_disclosed_prospectus.csv`, `glidepath_disclosed_web_kr_others.csv` | TDF 공시 글라이드패스 | 01 D·I1, 02 T7, 07 | 아니오 | 금융투자협회·운용사 공시: 재배포 조건 없음("All rights reserved"), 공시 문서 저작권은 운용사에 있을 가능성(미검증) | 금융투자협회 전자공시(https://dis.kofia.or.kr) 투자설명서에서 직접 읽음. 받는 코드는 공개 범위 밖 주제와 묶여 있어 넣지 않음 |
+| `raw/fund_tdf/tdf_fee_c_class.csv`, `tdf_fee_underlying_c_class_20261009.csv`, `tdfext_fee_kofia_20261009.csv`, `tdfext_fund_names_kofia_20261008.csv`, `results/.../fee_pclass_20261016/pclass_fee_table.csv` | TDF 보수·펀드명 | 01, 02, 07 | 아니오 | 같은 이유(KOFIA) | `fetch/tdf_fee_extract.py`, `fetch/tdfext_fee_extract.py`(내려받은 투자설명서 PDF에서 추출). `tdfext_fee_extract.py`의 판독 대조값은 코드에 없고 사용자가 만드는 `raw/fund_tdf/tdfext_fee_expect.csv`에서 읽음(3-3절) |
+| `processed/nav_tdf_clean_v3_20260928.csv`, `nav_tdfext_clean_v3_20260928.csv` | TDF 기준가(정제본) | 02 T7, 07 | 아니오 | 같은 이유(KOFIA) | `fetch/kofia_tdf.py` |
+| `raw/fund_tdf/early_class_nav/early_class_nav_20261012.csv` | TDF 같은 펀드의 가장 이른 대표 클래스 일별 기준가 | 07 구별 가능 최소 차이(`_gen_A_window_mde.py`) | 아니오 | 같은 이유(KOFIA) | 원 연구 저장소 `fetch/pilot9_kofia_cov.py`(의존 모듈이 공개 범위 밖이라 옮기지 않음). 같은 금융투자협회 기준가 조회는 `fetch/kofia_tdf.py`·`fetch/kofia_h_uh_nav.py` |
 | `raw/fund_tdf/mgmt_reports/holdings_20261009.csv`, `hedge_ratio_20261011fix.csv`, `krw_share_20261011fix.csv`, `holding_class_map_20261009.csv` | 자산운용보고서 보유내역·헤지비율(분류표는 작성자 수작업) | 02 T7 | 아니오 | 운용사 공시: 재배포 조건 미확인 | `fetch/mgmt_report_tdf.py` |
+| `results/pilot9_20261013/A_simple_20261017/L2_inputs_glide_fee_by_month.csv`, `results/pilot9_20261013/decisions_survey/D1_glide_2055_annual.csv` | 5대 운용사 2055 TDF의 월별 공시 위험자산 비중·총보수(30년 계산 입력), 다른 운용사 공시 글라이드 연별 값 (연구가 만든 파일) | 07 그림 왼쪽·30년 계산 | 아니오 | 위 글라이드패스·보수와 같은 이유(KOFIA·운용사 공시를 옮긴 값) | `07_tdf_glidepath_by_manager/notebooks/pilot9/_gen_A_simple.py`가 `01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`(`glide_w`·`fee_pct`)로 만듦. 07 그림·README를 다시 만들려면 `$PENSION_DATA_ROOT/results/` 아래 같은 경로에 두어야 함 |
 | `raw/kr_hist_20261016/kr_deposit_annual_kostat2015_1945_2014.csv` | 장기 예금 금리 연간 1945~2014 | 03 | 아니오 | 통계청 자료로 보이나 KOSIS DB인지 간행물인지 확인 못 함(간행물이면 공공누리 유형 따로) | 통계청 KOSIS(https://kosis.kr) |
 | 「2026년 기초연금 사업안내」 원문 발췌 | 보건복지부 지침 PDF 발췌 | 03 | 아니오 | 게시물에 공공누리 표시 없음 → 사전 협의 필요(https://www.mohw.go.kr/menu.es?mid=a10103010400) | https://www.mohw.go.kr/board.es?mid=a10409020000&bid=0026&list_no=1488765&act=view 첨부 1 |
 | 노란우산 약관·안내문 원문, 해약환급금 표 전체 | 중소기업중앙회 | 03 | 아니오 | 중기중앙회 이용약관: 허가 없는 게시물 사용·인용 금지(https://www.kbiz.or.kr/ko/contents/contents/contents.do?mnSeq=661). 재배포 조건 미확인 | https://www.8899.or.kr 해약환급금 안내(https://www.8899.or.kr/cmnsCnts/view?menuId=C080403000). 계산 재현에 꼭 필요한 공시 사실값 4개(36·60·72·168회 해약 때 이자 반영 비율 20·30·40·70%)만 `src/pension_lab/cand5p.py`의 `refund_int`, `03_selfemployed_50s/results/N/constants.csv`, `references/후보5_추가규칙_1차출처_20261106.md` 2-4절에 남기고 표 전체는 옮기지 않음 |
@@ -111,3 +113,10 @@ DataGuide는 에프앤가이드의 유료 엑셀 애드인입니다(대학 도�
 | 통계청 KOSIS | 조건부 가능(출처 표시) | KOSIS 이용안내 — 해당 파일의 원천 확인 못 해 넣지 않음 |
 | 중소기업중앙회(노란우산) | 불가(허가 필요) | 중기중앙회 이용약관 제15조 |
 | 에프앤가이드 DataGuide | 확인 못 함 → 넣지 않음 | 약관 페이지 접속 실패, 유료 라이선스 |
+
+## 6. 글에 인용한 상품 조건 (파일 아님)
+
+| 값 | 쓰는 곳 | 출처 | 비고 |
+|---|---|---|---|
+| 연금저축계좌 담보대출: 연 5.00%(2026.01.01 기준), 한도 펀드평가액의 50%·최대 4,000만 원, 담보유지비율 140%, 기간 365일 | 04 (`src/pension_lab/pilot7.py` `LOAN`·`LOAN_LTV`·`LOAN_MAINT`·`LOAN_TERM_M`, 04 스크립트 `LOAN_CAP`) | 신한투자증권 연금저축계좌 서비스 안내 https://www.shinhansec.com/siw/pension/saving-info/saving_account_service1/view.do (1차, 원 연구의 2026-10-08 근거 대장 기록값) | 원문 스냅샷은 넣지 않음(재배포 조건 확인 안 함). 2026-11-08에 다시 열어 보지 못함. 중도상환수수료는 확인하지 못해 0으로 둠 |
+| 세율: 연금저축 세액공제 16.5%·13.2%, 55세 전 인출(기타소득세) 16.5%, 연금소득세 5.5%, 일반계좌 배당소득세 15.4% | 04·05 (`src/pension_lab/aftertax.py` `CREDIT_LOW`·`CREDIT_HIGH`·`ETC_TAX`·`PENSION_UNDER70`·`TAX_FINANCIAL`) | 소득세법 §59의3①·§21①21·§129①5의2·§129①6나 등(국가법령정보센터) — 조문은 코드 주석 | 2026년 기준. 세법 개정 반영 안 함 |

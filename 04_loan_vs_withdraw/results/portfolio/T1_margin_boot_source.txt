@@ -1,0 +1,5 @@
+생성: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py t1(). seed=20261008, 경로=10000, paired_resample_paths(T1과 같은 호출).
+회귀: 기간 12개월의 P(대출<①)·P(대출<②)가 04_loan_vs_withdraw/results/pilot7/T1_boot.csv(신한 연금저축담보 5.00%, 2026 고정) 22행과 1e-12 안에서 같음(assert 통과).
+담보부족 = 대출 기간 중 어느 월말 평가액 ≤ 1.4 × 대출원금(이자는 따로 낸다고 봄; 이자를 원금에 더하면 확률이 높아짐 — 한국 2004~ 블록12 0.0319→0.0435, T1_margin_interest.csv).
+월말 값만 봄 → 달 안 장중 하락은 못 잡음(확률 과소 쪽).
+원 연구 저장소 make_topics_a.py 커밋 78f2b992ab8e11717f4a1eb29062525b1b7fd685을 옮김

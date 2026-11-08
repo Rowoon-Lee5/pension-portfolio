@@ -3,7 +3,8 @@
 assert 하는 것: 01 해지(C) 부호·D÷Y 범위, 더 담기 규칙 234칸과 문턱별 P 범위·예시 칸, 더 담기 대 줄이기 부호,
 03 상담표 전체 칸(과거 시작 연도 수·부트스트랩 범위·판정 문자열이 03 README에 그대로 있는지)과 기초연금 칸,
 03 '이자 반영 시점'·'75세까지 넓히면'·'80세까지 넓히면'·'3년 만기 예금이면' 단락 숫자(표 5-4~5-7),
-03 '85·90세까지 넓히면' 단락 숫자와 ★ 칸 전체·(c) 꼬리 1,000개의 손해 0(표 5-8).
+03 '85·90세까지 넓히면' 단락 숫자와 ★ 칸 전체·(c) 꼬리 1,000개의 손해 0(표 5-8),
+04~07 README 결과 숫자와 루트 README 짧은 주제 표 숫자(results/ CSV에서 make_topics_a.py를 쓰지 않고 다시 계산한 문자열이 README에 그대로 있는지).
 assert 하지 않고 표만 출력하는 것: 01 표본별 범위·거래비용 범위, 02 전체(그림 3 숫자). README와는 눈으로 대조.
 실행: python check_numbers.py   (통과하면 'ok'와 표를 출력)
       python check_numbers.py --csv 경로   (03 상담표 전체를 CSV로도 저장)
@@ -156,6 +157,63 @@ def cand5_late():
     return out, star, int(c.loss_n.max())
 
 
+def topics_a():
+    """04~07: {폴더: README에 있어야 할 문자열}, 루트 표 문자열. 범위 표기는 make_topics_a.py와 같은 규칙(같으면 한 값)."""
+    pr = lambda a, b, k=0: f"{a * 100:.{k}f}" if f"{a * 100:.{k}f}" == f"{b * 100:.{k}f}" else f"{a * 100:.{k}f}~{b * 100:.{k}f}"
+    D4, D5, D6, D7 = (ROOT / d for d in ("04_loan_vs_withdraw", "05_two_buckets_free_rebalancing", "06_lumpsum_vs_dca", "07_tdf_glidepath_by_manager"))
+    lab = {"KR 2004~": "한국 2004~", "KR 1991~": "한국 1991~", "US 1965~": "미국"}
+    m = rd(D4 / "results/portfolio/T1_margin_boot.csv")
+    m = m[(m["포트폴리오"] == "주식100") & (m["기간"] == "전체") & (m["기간(개월)"] == 12)]
+    f5 = m[m["꺼낼 금액(평가액 대비)"] == 0.5].groupby("표본")
+    cheap, brk = f5["P(대출<② 공제분 인출)"].agg(["min", "max"]), f5["P(담보부족)"].agg(["min", "max"])
+    be = rd(D4 / "results/pilot7/T1_breakeven.csv").set_index("Unnamed: 0").loc["신한 연금저축담보 5.00%", "vs ② 공제분(16.5%)"]
+    ic = rd(D4 / "results/portfolio/T1_margin_interest.csv").iloc[0]
+    r4 = [f"{lab[k]} {pr(*cheap.loc[k])}%" for k in lab] + [f"{lab[k]} {pr(*brk.loc[k], 1)}%" for k in lab] + [
+        f"{pr(m['P(대출<① 비공제분 인출)'].min(), m['P(대출<① 비공제분 인출)'].max())}%", f"{-be * 100:.1f}%보다",
+        f"{m[m['꺼낼 금액(평가액 대비)'] <= 0.3]['P(담보부족)'].max() * 100:.1f}% 이하",
+        f"{ic['P(담보부족) 이자 따로'] * 100:.1f}%→{round(ic['P(담보부족) 이자 원금 가산'] * 1000) / 10:.1f}%"]   # 0.0435 → 4.4(반올림)
+    root = [f"세 표본 {pr(cheap['min'].min(), cheap['max'].max())}%", f"{pr(brk['min'].min(), brk['max'].max(), 1)}%", r4[8]]
+
+    b = rd(D5 / "results/pilot7/T3_buckets.csv")
+    V = "일반계좌보다 나은 비율"
+    k = lambda cred, asset, ex, end="", kr="KR 2004~": b[(b["표본"] == kr) & (b["자산"] == asset) & b["인출"].str.startswith(ex) & b["통"].str.startswith(cred) & b["통"].str.endswith(end)]
+    rg = lambda x: f"{pr(x[V].min(), x[V].max())}%"
+    nd = k("비공제통", "국내주식", "55세 전")
+    same, cd = k("공제통 16.5%", "국내주식", "55세 전", "같은자산 일반계좌"), k("공제통 16.5%", "국내주식", "55세 전", "CD(세후)")
+    us = b[(b["자산"] == "미국주식") & b["인출"].str.startswith("55세 이후") & (b["h년"] >= 5)]
+    assert (us[V] > 0.5).all(), "미국주식 55세 뒤 연금: 연금저축이 모든 칸에서 나아야 함"
+    s5 = same[same["h년"] >= 5]
+    r5 = [rg(nd[nd["h년"] >= 5]), rg(nd[nd["h년"] < 5]), f"16.5%에서 {rg(cd[cd['h년'] >= 5])}", f"16.5%에서 {rg(s5)}",
+          f"환급 2개월 {rg(s5[s5['환급지연(개월)'] == 2])} → 13개월 {rg(s5[s5['환급지연(개월)'] == 13])}",
+          f"13.2%에서 {rg(k('공제통 13.2%', '국내주식', '55세 전', '같은자산 일반계좌').query('h년 >= 5'))}"]
+    p6 = rd(D5 / "results/pilot7/T6_paired.csv")
+    n6 = {s: int(d["0 배제(95%)"].astype(str).eq("True").sum()) for s, d in p6.groupby("표본")}
+    r5 += [f"2004~ {n6['KR 2004~']}칸", f"1991~ {n6['KR 1991~']}칸"]
+    root += [r5[0], f"{n6['KR 2004~']}·{n6['KR 1991~']}칸"]
+
+    fh = rd(D6 / "results/pilot7/T5_french_hist.csv")
+    a = fh[(fh["분할"] == 3) & (fh["대기자금"] == "대기 0%")].set_index(["패널", "시작상태"])["LS 승률(안 겹친)"] * 100
+    P22, P17 = "French 22개국(달러)", "OECD 17개국(현지통화, 대기 = 현지 3개월 금리)"
+    w, pk = [f"{a[(p, '전체')]:.0f}" for p in (P22, P17)], [f"{a[(p, '최고점(낙폭 0)')]:.0f}" for p in (P22, P17)]
+    sb, fb = rd(D6 / "results/pilot7/T5_boot.csv"), rd(D6 / "results/pilot7/T5_french_boot.csv")
+    g10 = pd.concat([sb[(sb["포트폴리오"] == "주식100") & sb["표본"].isin(lab) & (sb["분할"] == 3) & (sb["대기자금"] == "대기 0%")],
+                     fb[(fb["분할"] == 3) & (fb["대기자금"] == "대기 0%")]])["CER차(LS−CA) γ=10"]
+    assert (g10 < 0).all(), "주식100 γ=10: 모든 표본에서 나눠 넣기가 나아야 함"
+    r6 = [f"22개국 {w[0]}%, 17개국 {w[1]}%", f"22개국 {pk[0]}%, 17개국 {pk[1]}%"]
+    root += [f"{w[0]}·{w[1]}%", f"{pk[0]}·{pk[1]}%"]
+
+    ck = rd(D7 / "results/pilot9_C_real_inputs/C2_check_index_vs_real_overlap.csv")
+    ck = ck[ck["nav_lag_bdays"].isin([0, 1, 2]) & ck["index_model"].str.endswith("total") & ck["real"].isin(["KB_UH", "미래에셋", "삼성_H", "신한", "한국투자_UH"])]
+    assert len(ck) == 15
+    bp = rd(D7 / "results/pilot9_A_simple/L2b_boot_pairs.csv")
+    bp = bp[(bp["블록"].astype(str) == "1") & (bp["보수"] == "총보수")]
+    ratio = np.maximum(bp["비_중앙"], 1 / bp["비_중앙"])
+    v55 = rd(D7 / "results/pilot9_A_window_mde/vintage_summary.csv").set_index("vintage").loc[2055]
+    r7 = [f"{ck['te_pctpa'].min():.1f}~{ck['te_pctpa'].max():.1f}%p", f"{ratio.min():.2f}~{ratio.max():.2f}배", f"공통 {int(v55['T'])}개월", f"{v55['mde_med']:.1f}%p"]
+    root += r7
+    return {D4: r4, D5: r5, D6: r6, D7: r7}, root
+
+
 if __name__ == "__main__":
     pd.set_option("display.width", 200)
     out, loss = t4()
@@ -178,6 +236,11 @@ if __name__ == "__main__":
     miss = [f"{k}={v}" for k, v in late.items() if v not in readme3]
     assert not miss, f"03 README에 없는 85·90세 숫자: {miss}"
     ext.update(late)
+    ta, root = topics_a()
+    miss = [f"{d.name}: {x}" for d, xs in ta.items() for x in xs if x not in (d / "README.md").read_text(encoding="utf-8")]
+    miss += [f"루트: {x}" for x in root if x not in (ROOT / "README.md").read_text(encoding="utf-8")]
+    assert not miss, f"04~07 README에 없는 숫자: {miss}"
+    ext.update({d.name: xs for d, xs in ta.items()})
     if "--csv" in sys.argv:
         tab.to_csv(sys.argv[sys.argv.index("--csv") + 1], index=False, encoding="utf-8-sig")
     print(out, loss, th, d, cost, pairs, t7().to_string(), tab.drop(columns="칸").round(3).to_string(), bp, ext, "ok", sep="\n\n")
