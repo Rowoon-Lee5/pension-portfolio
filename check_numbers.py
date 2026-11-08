@@ -515,7 +515,7 @@ def r09(R):
     R.add("t9", "the difference exceeded a chart-reading error floor for {} of {} comparable funds (the largest about {}% in log terms over {} months); {} of the {} had only four months",
           int(big_.sum()), len(ok), f"{b.d_적립 * 100:.0f}".replace("-", "−"), f"{b.개월:.0f}", len(short_), len(ok))
     R.add("t9", "For {} of the {} the difference appeared only after", cnt("ins"), int(big_.sum()))
-    R.add("r", "| TDF {}개 중 처음 계획과 비교할 수 있는 {}개에서 판독 잡음 바닥선 밖 차이는 {}개(가장 큰 차이 로그 {}%, {}개월)였고, 그중 {}개는 판독 방법이 바뀐 뒤에만",
+    R.add("r", "| TDF {}개 중 처음 계획과 비교할 수 있는 {}개에서 판독 잡음 바닥선 밖 차이는 {}개(가장 큰 차이 로그 {}%, {}개월)였고, 그중 {}개는 판독 방법이 바뀐 뒤에만 차이가 생겨(결과 뒤 구분)",
           len(T), len(ok), int(big_.sum()), f"{b.d_적립 * 100:+.2f}", b.개월, cnt("ins"))
 
 
@@ -566,11 +566,11 @@ def r10(R):
     assert (mm.pe_prev > "2024-12-31").all()
     R.add("t10", "2025년 이후 보고서 {}행이 달랐습니다({}, `T10_pilot8_mismatch.csv`", len(mm), ", ".join(f"{MN[m]} {n}행" for m, n in mm.groupby("manager").size().items()))
     R.add("t10", "(three managers, {} funds, {} reports)", P.code.nunique(), len(P))
-    R.add("t10", "The bound on the change is about {} percentage points wide (median), and none of the {} funds showed a direction one or four quarters after the low; two quarters after, {} directional calls were held back",
-          f"{dw.median():.0f}", k1("Shist").code.nunique(), int((sh[sh.k == 2].fin == HOLD).sum()))
-    assert not sh[sh.k.isin([1, 4])].fin.isin([UP, DN]).any()
-    R.add("r", "분기 보고서 {}개({}개 펀드)로 2022년 하락장 뒤 '실제 − 목표' 변화를 쟀더니 1·2·4분기 뒤 방향(올라옴·벌어짐)이 나온 칸이 {}개였다. 보고서에 안 실린 몫 때문에 변화 경계 폭이 중앙 {}%p라",
-          len(P), P.code.nunique(), int(sh.fin.isin([UP, DN]).sum()), f"{dw.median():.0f}")
+    R.add("t10", "The bound on the change is about {} percentage points wide (median), and none of the {} funds showed a distinguishable direction (the bounds included zero) one, two or four quarters after the low. Two quarters after, the rule written before the calculation would have called {} funds 'gap widened'; these were held back",
+          f"{dw.median():.0f}", k1("Shist").code.nunique(), int(((sh.k == 2) & (sh.fin == HOLD) & (sh.pre == DN)).sum()))
+    assert not sh.fin.isin([UP, DN]).any() and (sh[sh.fin == HOLD].k == 2).all()
+    R.add("r", "분기 보고서 {}개({}개 펀드)로 2022년 하락장 뒤 '실제 − 목표' 변화를 쟀더니 1·2·4분기 뒤 방향(올라옴·벌어짐)이 나온 칸이 {}개였다({}분기 뒤 {}칸은 계산 전 규칙으로는 '{}'이었으나 결과 뒤 추가한 규칙으로 보류). 보고서에 안 실린 몫 때문에 변화 경계 폭이 중앙 {}%p라",
+          len(P), P.code.nunique(), int(sh.fin.isin([UP, DN]).sum()), "·".join(map(str, sorted(set(h.k)))), len(h), "·".join(sorted(set(h.pre))), f"{dw.median():.0f}")
 
 
 # ── 11 ───────────────────────────────────────────────────────────────────────
@@ -603,12 +603,12 @@ def r11(R):
     m97 = c[c.고점 != "1994-10"].us.mean()
     R.add("t11", "**하락 국면 {}번(20% 이상 하락 {}번) 모두 원화 미국주식이 국내주식보다 덜 빠졌지만, {}번 중 {}번은 미국주식도 원화로 손실이었습니다.** 원화 미국주식 평균 {}%는 1994~98년 국면(외환위기, {}%) 하나가 끌어올린 것이고, 그 국면을 빼면 {}%입니다.",
           len(c), int(c.하락20이상.sum()), len(c), int((c.us <= 0).sum()), f"{c.us.mean() * 100:+.1f}", f"{c[c.고점 == '1994-10'].us.iloc[0] * 100:+.0f}", f"{m97 * 100:+.1f}")
-    fx = max(rng.loc[p, "max"] for p in PORT[2:])
-    R.add("t11", "about {}% of paths holding only Korean equities ended below inflation-adjusted contributions ({}–{}% across samples and block lengths); mixes with unhedged foreign equities were at 0–{}%.",
+    fx = max(rng.loc[p, "max"] for p in ("③", "④"))                          # 비헤지(환노출) 조합만, ⑤ TDF는 0
+    R.add("t11", "about {}% of paths holding only Korean equities ended below inflation-adjusted contributions ({}–{}% across three samples and three block lengths, excluding a 120-month block); mixes with unhedged foreign equities were at 0–{}%.",
           f"{base['①'] * 100:.0f}", p1(rng.loc["①", "min"]), p1(rng.loc["①", "max"]), p1(fx))
     R.add("t11", "In all {} Korean downturns since 1991, US equities in won fell less than Korean equities, but in {} of them", len(c), int((c.us <= 0).sum()))
-    R.add("r", "다시 뽑은 경로의 약 {}%가 물가 뺀 원금보다 적었다(표본·블록에 따라 {}~{}%). 겹치지 않는 30년 기간이 {}개뿐이라 조합 사이 차이는 가려낼 수 없었다. 하락 국면 {}번 모두 원화 미국주식이 덜 빠졌지만 {}번은",
-          f"{base['①'] * 100:.0f}", p1(rng.loc["①", "min"]), p1(rng.loc["①", "max"]), int(i1.안겹친창), len(c), int((c.us <= 0).sum()))
+    R.add("r", "다시 뽑은 경로의 약 {}%가 물가 뺀 원금보다 적었다(표본 3개·블록 3종에 따라 {}~{}%, 블록 120개월 칸을 넣으면 {}~{}%). 겹치지 않는 30년 기간이 {}개뿐이라 조합 사이 차이는 가려낼 수 없었다. 하락 국면 {}번 모두 원화 미국주식이 덜 빠졌지만 {}번은",
+          f"{base['①'] * 100:.0f}", p1(rng.loc["①", "min"]), p1(rng.loc["①", "max"]), p1(min(rng.loc["①", "min"], r120.loc["①", "min"])), p1(max(rng.loc["①", "max"], r120.loc["①", "max"])), int(i1.안겹친창), len(c), int((c.us <= 0).sum()))
 
 
 def build():

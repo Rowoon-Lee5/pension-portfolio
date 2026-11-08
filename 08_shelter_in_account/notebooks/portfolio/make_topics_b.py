@@ -746,7 +746,7 @@ NOTE
 NOTE
 
 ---
-**English summary.** Did Korean target-date funds buy equities back toward their glide-path targets after the 2022 bear-market low? Quarterly holdings reports (three managers, 19 funds, 349 reports) list only the largest holdings, so the risky-asset share can only be bounded. The bound on the change is about 30 percentage points wide (median), and none of the 19 funds showed a direction one or four quarters after the low; two quarters after, 3 directional calls were held back because the point estimate lay outside its own bounds. This reflects the limits of the measurement more than fund behaviour. Not investment advice.
+**English summary.** Did Korean target-date funds buy equities back toward their glide-path targets after the 2022 bear-market low? Quarterly holdings reports (three managers, 19 funds, 349 reports) list only the largest holdings, so the risky-asset share can only be bounded. The bound on the change is about 30 percentage points wide (median), and none of the 19 funds showed a distinguishable direction (the bounds included zero) one, two or four quarters after the low. Two quarters after, the rule written before the calculation would have called 3 funds 'gap widened'; these were held back under a rule added after seeing the results, because the point estimate lay outside its own bounds. This reflects the limits of the measurement more than fund behaviour. Not investment advice.
 """.replace("RUN1", RUN.format(k="t10", extra=NEED)),
     D11: f"""
 ## 그림
@@ -763,7 +763,7 @@ NOTE
 NOTE
 
 ---
-**English summary.** Is "stocks are safe over 30 years" true for a saver who earns and retires in Korean won? Resampling Korean monthly data (1991–2026) into 10,000 thirty-year contribution paths, about 13% of paths holding only Korean equities ended below inflation-adjusted contributions (10.2–26.5% across samples and block lengths); mixes with unhedged foreign equities were at 0–0.6%. With only one non-overlapping 30-year period, differences between mixes cannot be distinguished statistically. In all 11 Korean downturns since 1991, US equities in won fell less than Korean equities, but in 5 of them they also lost money in won. Not investment advice.
+**English summary.** Is "stocks are safe over 30 years" true for a saver who earns and retires in Korean won? Resampling Korean monthly data (1991–2026) into 10,000 thirty-year contribution paths, about 13% of paths holding only Korean equities ended below inflation-adjusted contributions (10.2–26.5% across three samples and three block lengths, excluding a 120-month block); mixes with unhedged foreign equities were at 0–0.5%. With only one non-overlapping 30-year period, differences between mixes cannot be distinguished statistically. In all 11 Korean downturns since 1991, US equities in won fell less than Korean equities, but in 5 of them they also lost money in won. Not investment advice.
 """.replace("RUN1", RUN.format(k="t12", extra=" — 저장소 `results/simpletest_T2/`만 읽어 원자료 없이 됩니다")),
 }
 TAIL = {k: v.replace("NOTE", NOTE) for k, v in TAIL.items()}
