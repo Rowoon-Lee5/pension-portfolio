@@ -2,7 +2,8 @@
 
 assert 하는 것: 01 해지(C) 부호·D÷Y 범위, 더 담기 규칙 234칸과 문턱별 P 범위·예시 칸, 더 담기 대 줄이기 부호,
 03 상담표 전체 칸(과거 시작 연도 수·부트스트랩 범위·판정 문자열이 03 README에 그대로 있는지)과 기초연금 칸,
-03 '이자 반영 시점'·'75세까지 넓히면'·'80세까지 넓히면'·'3년 만기 예금이면' 단락 숫자(표 5-4~5-7).
+03 '이자 반영 시점'·'75세까지 넓히면'·'80세까지 넓히면'·'3년 만기 예금이면' 단락 숫자(표 5-4~5-7),
+03 '85·90세까지 넓히면' 단락 숫자와 ★ 칸 전체·(c) 꼬리 1,000개의 손해 0(표 5-8).
 assert 하지 않고 표만 출력하는 것: 01 표본별 범위·거래비용 범위, 02 전체(그림 3 숫자). README와는 눈으로 대조.
 실행: python check_numbers.py   (통과하면 'ok'와 표를 출력)
       python check_numbers.py --csv 경로   (03 상담표 전체를 CSV로도 저장)
@@ -132,6 +133,29 @@ def cand5_ext():
     return out
 
 
+def cand5_late():
+    """03 README '85·90세까지 넓히면'(표 5-8): 사람 B (가) ★ 칸 '손해/전체 · 차이 중앙값', ★ 칸(사람 A·B·C × (가)(나)(다)) 전체 손해 최대,
+    (c) 꼬리 1,000개 손해 최대, 꼬리로 바뀐 경로 수·꼬리 주식 월평균 ÷ r̄, (a) 표본 부족 표시."""
+    N, out, star = T3 / "results/N", {}, 0
+    for age in (85, 90):
+        for d in "ab":
+            for p, K2 in (("base", "안넣음"), ("defer", "넣음")):
+                s = rd(N / f"ext{age}{d}_{p}_bp_stats.csv")
+                s = s[(s.m == 300000) & (s.asset == "A") & (s.K1 == "전액") & (s.K2 == K2) & (s.region == "중소도시") & (s["쌍"] == "ps<dep")]
+                assert len(s) == 9, (age, d, p)                         # 사람 A·B·C × (가)(나)(다)
+                star = max(star, int(s.loss_n.max()))
+                r = s[(s.person == "가") & (s.b == "B")].iloc[0]
+                out[f"ext{age}{d}_{p}"] = f"{int(r.loss_n)}/{int(r.n)} · {r.median_gap:+.3f}"
+    c, lp = rd(N / "ext_late_c.csv"), rd(N / "ext_late_paths.csv").set_index("나이")
+    assert len(c) == 36000 and c.draw.nunique() == 1000 and (c.n == 21).all()
+    assert lp["표본 부족(경로 5개 미만)"].tolist() == [False, True] and lp["(a) 경로"].tolist() == [6, 1]
+    for age in (85, 90):
+        out[f"꼬리{age}"] = f"{lp.loc[age, '(c) 꼬리 주식 월평균'] * 100:.2f}%"
+        out[f"배수{age}"] = f"{lp.loc[age, '(c) 꼬리 평균 ÷ r̄']:.1f}배"
+        out[f"바뀐경로{age}"] = f"{int(lp.loc[age, '(c) 꼬리로 바뀐 경로'])}개({lp.loc[age, '(c) 바뀐 경로 시작']}년 시작)"
+    return out, star, int(c.loss_n.max())
+
+
 if __name__ == "__main__":
     pd.set_option("display.width", 200)
     out, loss = t4()
@@ -149,6 +173,11 @@ if __name__ == "__main__":
     ext = cand5_ext()
     miss = [f"{k}={v}" for k, v in ext.items() if v not in readme3]
     assert not miss, f"03 README에 없는 75세·3년 예금 숫자: {miss}"
+    late, star, closs = cand5_late()
+    assert star == 0 and closs == 0, (star, closs)
+    miss = [f"{k}={v}" for k, v in late.items() if v not in readme3]
+    assert not miss, f"03 README에 없는 85·90세 숫자: {miss}"
+    ext.update(late)
     if "--csv" in sys.argv:
         tab.to_csv(sys.argv[sys.argv.index("--csv") + 1], index=False, encoding="utf-8-sig")
     print(out, loss, th, d, cost, pairs, t7().to_string(), tab.drop(columns="칸").round(3).to_string(), bp, ext, "ok", sep="\n\n")

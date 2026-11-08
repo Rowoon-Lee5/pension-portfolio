@@ -37,6 +37,13 @@ def rate_2026() -> tuple[float, str]:
     return float(s.mean()), f"{s.index[0]:%Y-%m}~{s.index[-1]:%Y-%m}"
 
 
+def boot_blocks(r: pd.DataFrame) -> dict:
+    """부트스트랩 평균 블록 길이(C.BOOT_BLOCKS 순서): Politis–White 주식·예금, 12개월."""
+    b = {"PW_eq": P7.pw_block(r["eq"].to_numpy()), "PW_dep": P7.pw_block(r["dep"].to_numpy()), "12개월": 12.0}
+    assert tuple(b) == C.BOOT_BLOCKS
+    return b
+
+
 def compute(out: Path, flags: dict, mde: pd.DataFrame, ppl: dict) -> None:
     """_gen_cand5.stage_results와 같은 표를 새 엔진(cand5p)으로. flags = N 스위치, ppl = 기초연금 사람 3명."""
     out.mkdir(parents=True)
@@ -87,8 +94,7 @@ def compute(out: Path, flags: dict, mde: pd.DataFrame, ppl: dict) -> None:
             x = (w[p] - w["가"]) / w["contrib"]
             rows.append(x.groupby(level=["asset", "m"]).agg(["min", "median", "max"]).reset_index().assign(비교=k, 차이=f"({p})−(가)"))
     save(pd.concat(rows), "tax_effect.csv")
-    blocks = {"PW_eq": P7.pw_block(r["eq"].to_numpy()), "PW_dep": P7.pw_block(r["dep"].to_numpy()), "12개월": 12.0}
-    assert tuple(blocks) == C.BOOT_BLOCKS
+    blocks = boot_blocks(r)
     NB = 300 if QUICK else P("n_boot"); bst, bsd = [], []
     od = {**o0, "defer": True}                    # r3 N-H1: 연기판 부트스트랩(같은 재표본 경로, 70세 연금저축 쌍)
     for bn, blk in blocks.items():
@@ -221,6 +227,7 @@ def hand_checks() -> pd.DataFrame:
     a75 = CP.accumulate(z5, z5, z5, 500_000, 1.0, o, None, H5)
     a75b, a75k = (CP.accumulate(z5, z5, z5, mm, 1.0, CP.REC, None, H5) for mm in (500_000, 100_000))
     z8 = np.zeros((1, CP.Q("H80"))); a80 = CP.accumulate(z8, z8, z8, 500_000, 1.0, o, None, CP.Q("H80"))
+    z9 = np.zeros((1, CP.Q("H90"))); a90 = CP.accumulate(z9, z9, z9, 500_000, 1.0, o, None, CP.Q("H90"))
     d8 = np.zeros((1, 168)); d8[0, 72:96] = .003; ax = CP.accumulate(z, z, d8, 500_000, 1.0, CP.REC, None, 168)
     vx = {g: CP.evaluate(ax, 500_000, 0, 168, "p70", {**CP.REC, "int_t": g}, {"X": (500_000, 5.65e8, 0.0, 0.0)})["bp"][("X", "과세분만", "안넣음", "중소도시")][0]["dep"][0]
           for g in ("same", "guide")}
@@ -234,6 +241,8 @@ def hand_checks() -> pd.DataFrame:
               "코드": round(float(CP.evaluate(a75k, 100_000, 0, H5, "p70", CP.REC, ppl)["bp"][("B", "전액", "안넣음", "중소도시")][0]["ps"][0]), 2)},
              {"항목": "80세 판(표 5-6) 연기판 기초연금 B (가)·과세분만·K2 개시 전만, 수익 0·월 50만, 65~80세: 7,999,200 + 12 × Σ(321,100 − 28,000n, n = 1~10)", "손계산": 28_051_200,
               "코드": float(CP.evaluate(a80, 500_000, 0, CP.Q("H80"), "p70", o, ppl)["bp"][("B", "과세분만", "넣음", "중소도시")][0]["ps"][0])},
+             {"항목": "11절 90세 판(표 5-8) 같은 조건, 65~90세: 28,051,200 + 81~90세 인출 예금 8,400만 → (247만 − 2,428,900) × 12 × 10", "손계산": 32_983_200,
+              "코드": float(CP.evaluate(a90, 500_000, 0, CP.Q("H90"), "p70", o, ppl)["bp"][("B", "과세분만", "넣음", "중소도시")][0]["ps"][0])},
              {"항목": "이자 시점 기준(사업안내 70쪽 표, 2026-11-08) 65세 첫해, 민감도(그해 이자)와의 차: 금리 2032·33년만 월 0.3%, 사람 X(국민연금 50만·집 5억6,500만) 예금 쪽, 2034년 1~3월 = 2032년 이자 "
                     "3,600만 × 0.3% = 108,000, 4월~ = 2033년 이자는 신규 수급자·그해 이자 0이라 미반영 → guide − same = −(108,000 − 40,000) × 3", "손계산": -204_000,
               "코드": float(vx["guide"] - vx["same"])},
@@ -321,12 +330,13 @@ def defer_run(out: Path, ppl: dict, x: dict = {}) -> None:
 PANS = {"base": {}, "defer": {"defer": True}}
 # 75세 판 민감도(한계 메우기 감사): H1 옛 '한꺼번에'(기본판 2040년 잔액 전부). M1 '이자 1년 늦게'는 사업안내 시점이 기준이 되며 지움(설계서 9절)
 EXT_SENS = {"lump": ("base", {"lump75": True})}
+K2M = lambda d: d.assign(K2뜻="넣음 = 개시 전 잔액만(사업안내 92~93쪽), 표 5의 '넣음'과 다름")   # 감사 L3, ext75·80·85·90 bp CSV
 TERMS = {"ii": CP.Q("term"), "ii_만기+1년": (36, "예시", 1), "ii_만기+2년": (36, "예시", 2), "ii_상한": (36, "상한", 0)}   # 8-2, 판 (i) = 기존 bp_stats
 
 
-def ext_inputs(rbar: float) -> tuple[pd.DataFrame, pd.DataFrame, list]:
-    """8-1 입력: 실제 자료 r, (b)용 r_b(자료 끝 뒤 75세까지 주식·채권·예금 모두 r̄), 70세 비교 경로 시작 연도 st70."""
-    H, h, r = CP.Q("H75"), P("H70"), inp(CP.REC)
+def ext_inputs(rbar: float, H: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame, list]:
+    """8-1 입력: 실제 자료 r, (b)용 r_b(자료 끝 뒤 H(기본 75세)까지 주식·채권·예금 모두 r̄), 70세 비교 경로 시작 연도 st70."""
+    H, h, r = H or CP.Q("H75"), P("H70"), inp(CP.REC)
     fut = pd.date_range(r.index[-1] + pd.offsets.MonthEnd(1), periods=H - h, freq="ME")
     return r, pd.concat([r, pd.DataFrame(rbar, index=fut, columns=r.columns)]), [s for s in C.starts(r, CP.REC) if r.index.get_loc(s) + h <= len(r)]
 
@@ -338,8 +348,7 @@ def ext_run(out: Path, ppl: dict, rbar: float, x: dict = {}) -> None:
     H, h = CP.Q("H75"), P("H70"); r, r_b, st70 = ext_inputs(rbar)
     npath = lambda n: sum(r.index.get_loc(s) + n <= len(r) for s in C.starts(r, CP.REC))   # 실제 자료가 n개월 있는 시작 연도 수
     save = lambda d, name: (d.to_csv(out / name, index=False, encoding="utf-8-sig"), log(f"{out.name}/{name} {len(d)}행"))
-    k2m = lambda d: d.assign(K2뜻="넣음 = 개시 전 잔액만(사업안내 92~93쪽), 표 5의 '넣음'과 다름")   # 감사 L3
-    kh = ["path", "asset", "m", "person"]
+    k2m, kh = K2M, ["path", "asset", "m", "person"]
     runs = {pan: ({**CP.REC, **flag, **x}, ("hist", "bp_hist", "bp_stats")) for pan, flag in PANS.items()}
     runs.update({nm: ({**CP.REC, **PANS[pan], **flag}, ("hist", "bp_hist", "bp_stats")) for nm, (pan, flag) in ({} if x else EXT_SENS).items()})
     for nm, (o, keep) in runs.items():
@@ -385,6 +394,70 @@ def ext_run(out: Path, ppl: dict, rbar: float, x: dict = {}) -> None:
     tp = pd.DataFrame(rows); save(tp, "term_people.csv")
     t3 = tp[tp["사람"] == "B"].groupby("판")["3년 인정 이자 합"].first()
     assert abs(t3["i"] - t3["ii"]) <= 1 and t3["ii_상한"] > t3["ii"], t3   # 예시 해석 = 1년 상품 셋(i0 ≥ 4만이면 식이 같음), 상한 해석은 공제가 적어 더 큼
+
+
+LATE = {85: "H85", 90: "H90"}
+NB_C, CH = 1000, 100                                  # (c) 꼬리 수(회원 지시, 빠른 시험도 같음), 한 번에 계산할 꼬리 수(메모리)
+FEW, FEWC = 5, "표본 부족(경로 5개 미만)"               # (a) 표시 기준(설계서 11절, 결과 전에 정함), CSV 열 이름(감사 L1)
+
+
+def ext_late(out: Path, ppl: dict, rbar: float) -> None:
+    """설계서 11절, 표 5-8: 85·90세 판(75·80세 판과 같은 규칙). (a) 실제 자료가 H개월 있는 시작 연도만, (b) 70세 비교 경로 전부 + 자료 끝 뒤 주식·채권·예금 모두 r̄,
+    (c) (b)에서 자료 끝 뒤 주식 월수익만 입력 주식 월수익 전체(1991-04~)에서 정상 블록 부트스트랩(평균 블록 12개월 = 기존 '12개월' 블록, seed)한 NB_C 꼬리로 — ★ 칸만.
+    꼬리 j 하나를 모든 시작 연도에 같은 순서로(자료 끝 다음 달 = 꼬리 첫 달), 85세는 90세 꼬리의 앞부분. (c) 손해 = 꼬리마다 경로 중 연금저축 < 예금 수."""
+    save = lambda d, name: (d.to_csv(out / name, index=False, encoding="utf-8-sig"), log(f"{out.name}/{name} {len(d)}행"))
+    kh, k2s, paths_, rows = ["path", "asset", "m", "person"], {"base": "안넣음", "defer": "넣음"}, [], []
+    r0 = inp(CP.REC)
+    T = BS.paired_resample_paths([r0["eq"]], NB_C, CP.Q("H90") - P("H70"), mean_block=boot_blocks(r0)["12개월"], seed=P("seed"))[0]
+    for age, hk in LATE.items():
+        H = CP.Q(hk); r, r_b, st70 = ext_inputs(rbar, H)
+        real = np.array([len(r) - r.index.get_loc(s) for s in st70])         # 시작 달부터 자료 끝까지 개월 수
+        fill, na = H - real[real < H], int((real >= H).sum())
+        eq, bd, dep, keys = C.windows(r_b, st70, H); off = np.arange(H) - real[:, None]
+        assert keys == [s.strftime("%Y-%m") for s in st70] and off.max() < T.shape[1]
+        moved = np.zeros(len(keys), bool)                                    # 감사 M1: 꼬리에 따라 값이 바뀐 경로(★ 칸 어디서든)
+        for pan, flag in PANS.items():
+            o = {**CP.REC, **flag}; got = {}
+            for src, rx, st in (("a", r, None), ("b", r_b, st70)):
+                df, bp = CP.run(rx, o, H, "p70", st=st, bp=ppl); got[src] = (df, bp)
+                tag = (lambda d: d.assign(**{FEWC: na < FEW})) if src == "a" else (lambda d: d)   # 감사 L1
+                save(tag(df), f"ext{age}{src}_{pan}_hist.csv"); save(tag(K2M(bp)), f"ext{age}{src}_{pan}_bp_hist.csv")
+                save(tag(K2M(CP.bp_stats(bp))), f"ext{age}{src}_{pan}_bp_stats.csv")
+            (da, ba), (db, bb) = got["a"], got["b"]
+            assert da.path.nunique() == (real >= H).sum() and db.path.nunique() == len(st70)
+            assert set(da.path) <= set(pd.read_csv(out / f"ext80a_{pan}_hist.csv").path)
+            same(f"ext{age} {pan} (b)=(a)", da, db[db.path.isin(da.path)], kh)
+            same(f"ext{age} {pan} bp (b)=(a)", ba, bb[bb.path.isin(ba.path)], kh + ["b", "K1", "K2", "region"])
+            # (c): 꼬리 −1 = r̄(점검: (b)와 같아야 함), 0..NB_C−1 = 부트스트랩
+            sb = bb[(bb.asset == "A") & (bb.m == M) & (bb.K1 == "전액") & (bb.K2 == k2s[pan]) & (bb.region == "중소도시")]
+            Tx = np.vstack([np.full(T.shape[1], rbar), T]); D = np.arange(-1, NB_C)
+            for J in (D[i:i + CH] for i in range(0, len(D), CH)):
+                E = np.concatenate([np.where(off >= 0, Tx[j + 1][np.clip(off, 0, None)], eq) for j in J])
+                rep = lambda x: np.tile(x, (len(J), 1))
+                acc = CP.accumulate(E, rep(bd), rep(dep), M, P("w_eq")["A"], o, [int(k[5:]) for k in keys] * len(J), H)
+                for pn, room in C.rooms(o).items():
+                    e = CP.evaluate(acc, M, room, H, "p70", o, ppl)
+                    for b in ppl:
+                        tot, psb, _ = e["bp"][(b, "전액", k2s[pan], "중소도시")]
+                        x = ((psb + tot["ps"]) - (e["dep"] + tot["dep"])).reshape(len(J), -1) / e["contrib"]
+                        y = (tot["ps"] - tot["dep"]).reshape(len(J), -1) / e["contrib"]
+                        g = sb[(sb.person == pn) & (sb.b == b)].set_index("path").loc[keys]
+                        xb = ((g.ps - g.dep) / g.contrib).to_numpy()
+                        assert np.allclose(x[:, real >= H], xb[real >= H], rtol=1e-12, atol=0)    # 꼬리 없는 경로 = (a)·(b) 값, 모든 꼬리에서
+                        if J[0] == -1:
+                            assert np.allclose(x[0], xb, rtol=1e-12, atol=1e-15)                 # 꼬리 r̄ = (b)
+                        k = J >= 0
+                        moved |= ~np.isclose(x[k], xb, rtol=1e-12, atol=0).all(0)
+                        rows.append(pd.DataFrame({"나이": age, "판": pan, "person": pn, "b": b, "draw": J[k], "n": x.shape[1],
+                                                  "loss_n": (x[k] < 0).sum(1), "median_gap": np.median(x[k], 1), "bp_gap_median": np.median(y[k], 1)}))
+            log(f"ext{age} {pan} (c) {NB_C}꼬리 끝")
+        # 감사 M1: 바뀐 경로 = 꼬리가 있는 경로 중 가장 늦게 시작한 연도들(이른 경로는 꼬리 시작 전 잔액 0). 꼬리 평균 > r̄(평균도 올린 판)
+        tm = float(T[:, :H - P("H70")].mean())
+        assert moved.any() and not moved[real >= H].any() and (np.flatnonzero(moved) == np.arange(len(keys) - moved.sum(), len(keys))).all() and tm > rbar
+        paths_.append({"나이": age, "개월": H, "(a) 경로": na, "(b) 경로": len(st70), "채운 경로": len(fill),
+                       "채운 달 최소": int(fill.min()), "채운 달 최대": int(fill.max()), FEWC: na < FEW, "(c) 꼬리로 바뀐 경로": int(moved.sum()),
+                       "(c) 바뀐 경로 시작": f"{keys[np.flatnonzero(moved)[0]][:4]}~{keys[-1][:4]}", "(c) 꼬리 주식 월평균": tm, "(c) 꼬리 평균 ÷ r̄": tm / rbar})
+    save(pd.DataFrame(paths_), "ext_late_paths.csv"); save(pd.concat(rows, ignore_index=True), "ext_late_c.csv")
 
 
 def guide_check(N: Path) -> None:
@@ -727,6 +800,31 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
                         "손해(75세·같은 경로)": frac(((g7.ps - g7.dep) < 0).sum(), len(g7)), "차이중앙값(75세·같은 경로)": rl(g7, g7.ps - g7.dep),
                         "기초연금차(65~75·같은 경로)": rl(g7, g7.bp_ps - g7.bp_dep)})
     t56 = pd.DataFrame(t56)
+    # 표 5-8(설계서 11절): 85·90세 판 (a)·(b)·(c). (a) 경로 5개 미만이면 칸에 '표본 부족, 해석하지 말 것'
+    lp, cc, t58 = pd.read_csv(N / "ext_late_paths.csv").set_index("나이"), pd.read_csv(N / "ext_late_c.csv"), []
+    for age in lp.index:
+        for pan in PANS:
+            ga, gb = (star_(pd.read_csv(N / f"ext{age}{s}_{pan}_bp_hist.csv"), pan) for s in "ab")
+            for (p, b), g in gb.groupby(["person", "b"]):
+                a_ = ga[(ga.person == p) & (ga.b == b)]
+                c_ = cc[(cc["나이"] == age) & (cc["판"] == pan) & (cc.person == p) & (cc.b == b)]; q = (c_.loss_n / c_.n).quantile([0, .05, .5, .95, 1])
+                few = " (표본 부족, 해석하지 말 것)" if len(a_) < FEW else ""
+                assert len(c_) == NB_C and (c_.n == len(g)).all()
+                t58.append({"나이": age, "판": pann[pan], "사람": f"({p})", "사람(기초연금)": b,
+                            "(a) 손해": frac(((a_.ps - a_.dep) < 0).sum(), len(a_)) + few, "(a) 차이중앙값": rl(a_, a_.ps - a_.dep) + few,
+                            "(a) 기초연금차": rl(a_, a_.bp_ps - a_.bp_dep) + few,
+                            "(b) 손해": frac(((g.ps - g.dep) < 0).sum(), len(g)), "(b) 차이중앙값": rl(g, g.ps - g.dep), "(b) 기초연금차": rl(g, g.bp_ps - g.bp_dep),
+                            "(c) 손해 비율 5%·50%·95%": "·".join(f"{q[x]:.0%}" for x in (.05, .5, .95)), "(c) 최소~최대": f"{q[0]:.0%}~{q[1]:.0%}"})
+    t58 = pd.DataFrame(t58)
+    l58 = lambda age, c: int(lp.loc[age, c])
+    a2 = lambda c, f: "·".join(f"{a}세 {f(lp.loc[a, c])}" for a in lp.index)
+    c58 = (f"(c)의 꼬리 주식 월평균은 {a2('(c) 꼬리 주식 월평균', '{:.3%}'.format)}로 r̄(월 {rbar:.3%})의 {a2('(c) 꼬리 평균 ÷ r̄', '{:.1f}배'.format)}라, "
+           "위험과 함께 평균 수익도 올린 판이다(연금저축에 유리한 쪽이 섞임). "
+           f"꼬리로 값이 바뀐 경로는 {l58(85, '(b) 경로')}경로 중 {a2('(c) 꼬리로 바뀐 경로', '{}경로'.format)}"
+           f"({a2('(c) 바뀐 경로 시작', '{}년 시작'.format)})뿐이다(나머지는 꼬리 시작 전에 연금저축 잔액이 이미 0). "
+           "채권·예금 꼬리는 r̄ 고정이라 주식과 함께 움직이지 않는다. 그래서 (c)의 손해 비율 0%를 '주식 위험을 넣어도 손해 0'의 근거로 쓰면 안 된다")
+    assert (cc.loss_n == 0).all()                       # c58의 '0%'
+    r0_period = "{:%Y-%m}~{:%Y-%m}".format(*inp(CP.REC).index[[0, -1]])
     # 표 5-7: 이자 반영 시점 민감도(int_compare). 기준 = 사업안내 표(2026-11-08 회원 결정, 2026-11-07 조건의 만족 여부와 별개 — 문장에 둘 다 적음)
     t57 = pd.read_csv(N / "int_timing_compare.csv")
     ok57 = bool((t57["손해 건수 최대 변화"] == 0).all() and (t57["차이 중앙값 최대 변화"] < 0.01).all())
@@ -760,7 +858,7 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
               + f" → 차이중앙값 범위 {f3(bm['median_gap'].min())}~{f3(bm['median_gap'].max())}. 세부 = `N/int_star_alt.csv`.")
     pick = lambda d, **kw: d.loc[np.logical_and.reduce([d[k] == v for k, v in kw.items()])].iloc[0]
     bga = lambda s, pn: pick(t54, 자료=s, 판=pn, 사람="(가)", **{"사람(기초연금)": "B"})
-    fill = {"t54": "; ".join(
+    fill = {"c58": c58, "t54": "; ".join(
         f"({s}) {bga(s, '기본판')['경로']}경로" + ("(228개월 실제 자료, 기준)" if s == "a" else "(자료 끝 뒤 r̄, 민감도)") + ", 사람 B (가)·★ 연금저축 < 예금 손해 "
         + ", ".join(f"{pn} {bga(s, pn)['손해(75세)']}(같은 경로 70세 판 {bga(s, pn)['손해(70세·같은 경로)']}, 65~75세 기초연금차 중앙값 {bga(s, pn)['기초연금차(65~75)']})"
                     for pn in pann.values()) for s in ("a", "b"))}
@@ -837,7 +935,7 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
           f"(기초연금 {pv('B', '나', '기초연금(월)'):,}·{pv('B', '다', '기초연금(월)'):,}원), A (다)는 {pv('A', '다', '선정기준액 대비'):.1%}(월 {pv('A', '다', '기초연금(월)'):,}원, 감액 구간)다(감사 r2 M7).")
     t5head = ("⚠ 기초연금은 65~70세(2034~2039)만 더한다. 연기판의 70세 이후 연금소득이 깎을 기초연금이 빠져 있어 **연기판에 유리한 창**이다. "
               "수령 전 잔액은 시행령 §14 문구('정기 지급액 또는 최종 잔액', 기초연금 근거 106행)와 사업안내 인쇄 92~93쪽 모두 금융재산으로 본다(연기판 ★ = K2 넣음). "
-              "75세(2044년)까지 넓힌 판은 표 5-4(설계서 8-1), 80세(2049년)까지는 표 5-6. "
+              "75세(2044년)까지 넓힌 판은 표 5-4(설계서 8-1), 80세(2049년)까지는 표 5-6, 85·90세까지는 표 5-8. "
               f"이자소득 반영 시점 = {INT_NAME[CP.REC['int_t']]}(65세 첫해 신규 수급자 ※ 포함, 설계서 9절), 민감도({INT_NAME[INT_ALT['int_t']]})는 표 5-7.")
     L = [
         "# 후보 5 포트폴리오판 결과 — 50대 자영업자: 연금저축 vs 노란우산공제 vs 예금 (2026-11-06)",
@@ -1004,10 +1102,28 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         f"표 5-4와 같은 규칙(납입 70세 끝, 2040년부터 ÷ 10, ÷ 9, … — 2049년 1월 ÷ 1로 잔액 전부를 꺼내 80세 말 연금저축 잔액 0). 실제 시장 자료가 288개월(80세 말) 있는 시작 연도만: "
         f"**{ep[80]}경로**(75세 판 (a) {ep[75]}경로, 70세 판 {ep[70]}경로 중). 자료 끝 뒤를 r̄로 채우는 (b)는 만들지 않았다. "
         "'같은 경로' 열 = 같은 경로의 75세 판(표 5-4 규칙). 금액 ÷ 누적 납입(70세까지), 기초연금은 액면 합. "
-        f"81세 이후는 계산하지 않았다: 실제 자료가 81세 말(300개월)까지 있는 시작 연도는 {ep[81]}개로 더 줄고, 그 뒤를 채우려면 (b)처럼 r̄ 합성(주식 위험 0)이 들어간다. "
+        f"실제 자료가 81세 말(300개월)까지 있는 시작 연도는 {ep[81]}개다. 85·90세까지는 표 5-8(자료 끝 뒤를 채운 판 포함). "
         "세부 = `N/ext80a_*.csv`, 경로 수 = `N/ext_paths.csv`.",
         "",
         md_table(t56),
+        "",
+        "### 표 5-8. 기초연금을 85·90세(2054·2059년)까지: 그 나이 금액 + 65세부터 기초연금, 연금저축 < 예금 (★ 칸만, 주식 100%, 월 30만 원, 중소도시, S_lo)",
+        "",
+        "설계서 11절(2026-11-08 회원 지시). 표 5-4·5-6과 같은 인출·세금·기초연금 규칙이다. 2049년 1월에 연금저축 잔액을 전부 꺼내므로 81세부터 연금저축 연금소득은 0이고, "
+        "꺼낸 돈은 인출 예금(금융재산)으로 남아 기초연금을 깎는다. 기초연금 금액은 2026 고시 값 그대로(N3 근사), 76세 이후도 같은 규칙. "
+        "**사망률을 넣지 않았다(모두 90세까지 산다고 가정).** 85세 말 = 348개월, 90세 말 = 408개월. "
+        f"(a) = 실제 자료가 그 개월 수만큼 있는 시작 연도만: 85세 {l58(85, '(a) 경로')}경로, 90세 {l58(90, '(a) 경로')}경로(5개 미만이면 칸에 '표본 부족, 해석하지 말 것'). "
+        f"(b) = 70세 비교 {l58(85, '(b) 경로')}경로 전부, {period[-7:]} 뒤 달은 주식·채권·예금 모두 r̄(월 {rbar:.6f}). 채운 달 수: 85세 {l58(85, '채운 경로')}경로 "
+        f"{l58(85, '채운 달 최소')}~{l58(85, '채운 달 최대')}개월, 90세 {l58(90, '채운 경로')}경로 {l58(90, '채운 달 최소')}~{l58(90, '채운 달 최대')}개월. "
+        "**자료 끝 뒤는 주식 위험 0인 가정이라 연금저축 쪽 위험을 과소평가함.** (b)에서 (a)와 겹치는 경로는 (a)와 같은 값임을 코드에서 대조했다. "
+        f"(c) = 민감도: (b)에서 자료 끝 뒤 주식 월수익만 r̄ 대신 입력 주식 월수익 표본({r0_period})에서 정상 블록 부트스트랩(평균 블록 12개월 — 부트스트랩 '12개월' 블록과 같은 함수, "
+        f"시드 {P('seed')})으로 뽑은 꼬리 {NB_C}개로 채움(채권·예금 꼬리는 r̄ 그대로). 꼬리 하나를 {l58(85, '(b) 경로')}경로 모두에 같은 순서로 쓰고(85세 = 90세 꼬리의 앞부분), "
+        "꼬리마다 손해 경로 비율을 센 분포의 5%·50%·95% 값과 최소~최대. 꼬리가 없는 경로는 모든 꼬리에서 (a)·(b)와 같은 값이고 꼬리를 r̄로 두면 (b)와 같은 값임을 코드에서 대조했다. "
+        f"**{c58}.** "
+        "금액 ÷ 누적 납입(70세까지), 기초연금차 = 경로별 (연금저축 쪽 − 예금 쪽) 기초연금 합 차의 중앙값 ÷ 누적 납입. "
+        "세부 = `N/ext85*.csv`·`N/ext90*.csv`(전 칸), `N/ext_late_c.csv`(꼬리별 ★ 칸), `N/ext_late_paths.csv`.",
+        "",
+        md_table(t58),
         "",
         "### 표 5-5. 사람이 처음 가진 금융재산을 3년 만기 정기예금으로 볼 때 (65~70세 창 = 표 5와 같은 칸, ★ 칸, 사람 A·B)",
         "",
@@ -1143,6 +1259,14 @@ if __name__ == "__main__":
     t0 = time.time()
     C._check(); CP._check()
     run = OUT / f"{'quick' if QUICK else 'run'}_{datetime.datetime.now():%Y%m%d_%H%M}"; run.mkdir(parents=True)
+    lf = open(run / "run_log.txt", "w", encoding="utf-8", buffering=1)   # 감사 L3: 화면 출력·오류를 실행 폴더에도
+
+    class Tee:
+        def __init__(s, a): s.a = a
+        def write(s, x): s.a.write(x); lf.write(x)
+        def flush(s): s.a.flush(); lf.flush()
+        def __getattr__(s, k): return getattr(s.a, k)               # encoding·isatty 등은 원래 스트림
+    sys.stdout, sys.stderr = Tee(sys.stdout), Tee(sys.stderr)
     log(f"시작 {run} (빠른 시험={QUICK})")
     mde = CP.mde_table(inp(CP.REC)); mde.to_csv(run / "mde.csv", index=False, encoding="utf-8-sig")
     hand_checks().to_csv(run / "hand_checks.csv", index=False, encoding="utf-8-sig")
@@ -1156,6 +1280,7 @@ if __name__ == "__main__":
     decompose(run / "N", ppl)
     defer_run(run / "N", ppl)
     ext_run(run / "N", ppl, rbar)
+    ext_late(run / "N", ppl, rbar)
     int_alt(run / "N", ppl, rbar); int_compare(run / "N"); star_alt(run / "N", ppl, rbar)
     guide_check(run / "N" if CP.REC["int_t"] == "same" else run / "N" / "intalt")   # 대조 CSV는 같은 해 판으로 만든 값
     CP.constants_table().to_csv(run / "N" / "constants.csv", index=False, encoding="utf-8-sig")
