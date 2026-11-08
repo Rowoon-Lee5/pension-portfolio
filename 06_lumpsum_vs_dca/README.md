@@ -46,6 +46,6 @@
 본문의 '파일럿 T1·T3·T5·T6·T2', '10월 19일 A' 같은 이름은 원 연구 저장소의 분석 이름이고, 그 결과 파일은 이 폴더 `results/`에 있습니다. '문서'·'포트폴리오 문서'는 원 연구 저장소의 요약 문서(이 저장소에 없음), '9번 주제'는 원 연구 저장소의 다른 주제입니다.
 
 ---
-**English summary.** When a lump sum moves into a pension fund, should it go in at once or over three months? In non-overlapping one-year windows across 22 (USD) and 17 (local-currency) countries, investing at once won about two-thirds of the time, including windows that started at a market peak; single-country peak windows were few and mixed. For a highly risk-averse investor (relative risk aversion 10), spreading the money had a higher certainty-equivalent return in every sample for an all-equity portfolio, but not for every balanced-portfolio cell. Not investment advice.
+**English summary.** When a lump sum moves into a pension fund, should it go in at once or over three months? In non-overlapping one-year windows across 22 (USD) and 17 (local-currency) countries, investing at once won 59–66% of the time, and 64–66% in windows that started at a market peak; single-country peak windows were few and mixed. For a highly risk-averse investor (relative risk aversion 10), spreading the money had a higher certainty-equivalent return in every sample for an all-equity portfolio, but not for every balanced-portfolio cell. Not investment advice.
 
 _생성: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py (숫자는 결과 CSV에서 읽어 자동으로 채움)_

@@ -56,7 +56,7 @@ def read(rel, **kw):
 
 
 def save(fig, name, data):
-    for ext in ("png", "svg"):
+    for ext in ("png",) if FIG.parent.name == D7 else ("png", "svg"):   # 07 svg는 선 좌표에 공시 글라이드 값이 그대로 남아 뺌(공개 감사 F2)
         fig.savefig(FIG / f"{name}.{ext}")
     plt.close(fig)
     data.to_csv(FIG / f"{name}_data.csv", index=False, encoding="utf-8-sig")
@@ -126,7 +126,7 @@ NOTE
 NOTE
 
 ---
-**English summary.** When a lump sum moves into a pension fund, should it go in at once or over three months? In non-overlapping one-year windows across 22 (USD) and 17 (local-currency) countries, investing at once won about two-thirds of the time, including windows that started at a market peak; single-country peak windows were few and mixed. For a highly risk-averse investor (relative risk aversion 10), spreading the money had a higher certainty-equivalent return in every sample for an all-equity portfolio, but not for every balanced-portfolio cell. Not investment advice.
+**English summary.** When a lump sum moves into a pension fund, should it go in at once or over three months? In non-overlapping one-year windows across 22 (USD) and 17 (local-currency) countries, investing at once won 59–66% of the time, and 64–66% in windows that started at a market peak; single-country peak windows were few and mixed. For a highly risk-averse investor (relative risk aversion 10), spreading the money had a higher certainty-equivalent return in every sample for an all-equity portfolio, but not for every balanced-portfolio cell. Not investment advice.
 """.replace("RUN1", RUN.format(k="t5", extra=" — 저장소 `results/`만 읽어 원자료 없이 됩니다")),
     D7: """
 ## 그림
@@ -135,18 +135,18 @@ NOTE
 
 ## 파일
 
-- `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 오른쪽 '실제 − 계산' 점·선과 30년 금액 비만), 읽은 결과 파일 sha256(`_source.txt`). 왼쪽 선의 공시 글라이드패스 값은 넣지 않았습니다(금융투자협회·운용사 공시, 재배포 조건 미확인 — `../DATA_SOURCES.md`).
+- `figures/`: 그림(`.png`만), 그림 숫자(`_data.csv`: 오른쪽 '실제 − 계산' 점·선과 30년 금액 비만), 읽은 결과 파일 sha256(`_source.txt`). 왼쪽 선의 공시 글라이드패스 값은 넣지 않았습니다(금융투자협회·운용사 공시, 재배포 조건 미확인 — `../DATA_SOURCES.md`). `.svg`는 선 좌표에 그 값이 그대로 남아 넣지 않았습니다.
 - `results/pilot9_A_simple/`: `L2b_boot_pairs.csv`(운용사 쌍별 30년 금액 비 부트스트랩 요약), `L1_common_pair_t.csv`(공통 기간 쌍별 월 수익 차 t), `L1_real_nav_stats.csv`(운용사별 실제 연수익·변동성·낙폭 요약).
 - `results/pilot9_A_window_mde/`: `vintage_summary.csv`(빈티지별 구별 가능 최소 차이), `common_window.csv`(빈티지별 공통 기간).
 - `results/pilot9_C_real_inputs/`: `C2_check_index_vs_real_overlap.csv`(실제 기준가 대 '공시 비중 × 지수' 계산의 상관·평균차·추적오차, 시차 0~2일).
 - `results/pilot7/`: `T2_panel_ext_reg.csv`(19개 운용사 패널 회귀). 모두 요약 표이고 기준가·보수·글라이드 원값은 없습니다.
-- 코드: `../04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py`(그림·README), `notebooks/pilot9/_gen_A_simple.py`·`_gen_A_window_mde.py`(원 계산 노트북 생성기), `notebooks/pilot7/T2_같은빈티지괴리.py`(패널), 입력 생성은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`. 기준가·보수 받는 코드는 `../src/pension_lab/fetch/`(`kofia_tdf.py`·`kofia_h_uh_nav.py`·`tdf_fee_extract.py`·`tdfext_fee_extract.py`).
+- 코드: `../04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py`(그림·README), `notebooks/pilot9/_gen_A_simple.py`·`_gen_A_window_mde.py`(원 계산 노트북 생성기), `notebooks/pilot7/T2_같은빈티지괴리.py`(패널), 입력 생성은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`. 두 생성기는 원 저장소 폴더 구조(같은 폴더의 `_build_C_real_inputs.py`를 import)를 전제로 해 그대로는 돌지 않습니다 — `_build_C_real_inputs.py`와 같은 폴더에 두고 실행해야 합니다. 기준가·보수 받는 코드는 `../src/pension_lab/fetch/`(`kofia_tdf.py`·`kofia_h_uh_nav.py`·`tdf_fee_extract.py`·`tdfext_fee_extract.py`).
 - RUN1
 
 NOTE
 
 ---
-**English summary.** Target-date 2055 funds from Korea's five largest managers follow different disclosed glide paths; held exactly as disclosed, they would end 30 years apart by a factor of about 1.0–1.2 in simulation. But actual returns deviated from a 'disclosed weights × indices − fee' replica by several percentage points a year, and two years of common history can only distinguish annual differences of roughly 9–10 pp. A 19-manager panel did not find crash losses explained by the disclosed risky-asset share. Short return rankings therefore say little about manager differences. Not investment advice.
+**English summary.** Target-date 2055 funds from Korea's five largest managers follow different disclosed glide paths; held exactly as disclosed, they would end 30 years apart by a factor of about 1.0–1.2 in simulation. But actual returns deviated from a 'disclosed weights × indices − fee' replica by several percentage points a year, and two years of common history can only distinguish annual differences of roughly 9–10 pp. Within the same vintage, a 19-manager panel did not find differences in crash losses explained by the disclosed risky-asset share (across vintages the share does line up with losses). Short return rankings therefore say little about manager differences. Not investment advice.
 """.replace("RUN1", RUN.format(k="t2a", extra=" — 공시 글라이드·보수 입력(`pilot9_20261013/A_simple_20261017/L2_inputs_glide_fee_by_month.csv`, `pilot9_20261013/decisions_survey/D1_glide_2055_annual.csv`)이 저장소에 없어 `PENSION_DATA_ROOT`의 `results/` 아래에 있어야 돕니다")),
 }
 TAIL = {k: v.replace("NOTE", NOTE) for k, v in TAIL.items()}

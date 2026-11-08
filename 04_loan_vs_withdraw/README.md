@@ -49,6 +49,6 @@
 본문의 '파일럿 T1·T3·T5·T6·T2', '10월 19일 A' 같은 이름은 원 연구 저장소의 분석 이름이고, 그 결과 파일은 이 폴더 `results/`에 있습니다. '문서'·'포트폴리오 문서'는 원 연구 저장소의 요약 문서(이 저장소에 없음), '9번 주제'는 원 연구 저장소의 다른 주제입니다.
 
 ---
-**English summary.** Should a Korean pension-savings holder who needs cash borrow against the account instead of withdrawing? Using a block bootstrap of past monthly returns (Korea 2004–, 1991–; US 1965–) with 2026 tax rules and one broker's loan terms, borrowing for 12 months was usually cheaper than withdrawing tax-deducted money, but close to a coin flip against withdrawing non-deducted principal. Borrowing the full 50% limit carried a margin-shortfall (top-up or forced sale) probability of a few percent over 12 months; borrowing 30% or less kept it near zero. Figures are resampled history, not forecasts. Not investment advice.
+**English summary.** Should a Korean pension-savings holder who needs cash borrow against the account instead of withdrawing? Using a block bootstrap of past monthly returns (Korea 2004–, 1991–; US 1965–) with 2026 tax rules and one broker's loan terms, borrowing for 12 months was usually cheaper than withdrawing tax-deducted money, but close to a coin flip against withdrawing non-deducted principal. Borrowing the full 50% limit carried a margin-shortfall (top-up or forced sale) probability of up to about 9% over 12 months depending on the sample; borrowing 30% or less kept it at 0.2% or below. Figures are resampled history, not forecasts. Not investment advice.
 
 _생성: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py (숫자는 결과 CSV에서 읽어 자동으로 채움)_
