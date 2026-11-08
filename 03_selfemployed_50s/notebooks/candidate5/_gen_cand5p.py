@@ -750,7 +750,9 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
         return f"{lab or STAR[s]} 손해 건수 바뀐 칸 {int(dl.sum())}, 차이중앙값·기초연금차 최대 변화 {dm.max():.4f}"
     star_x = ("같은 ※ 해석 민감도, 표 5-4(75세)·표 5-6(80세) 판(정리 감사 L2; 창마다 기본판·연기판 × ★ 칸 사람 A·B·C (가)(나)(다) = 18칸, 반올림 전, 기준 대비): "
               + "; ".join(f"{w} — " + ", ".join(sline(s, sx.xs(w, level="창"), STAR[s].split("(")[0]) for s in ("1~3월도", "없음"))
-                          for w in sx.index.unique("창")) + ". 세부 = `N/int_star_alt.csv`(창 열).")
+                          for w in sx.index.unique("창")) + ". 세부 = `N/int_star_alt.csv`(창 열). "
+              "판 (i)(1년 예금)에서는 ※ 규정이 작동할 이자 공백이 없어 변화가 0이고, ※가 작동하는 판 (ii)(3년 만기)는 75·80세에서 계산하지 않았다.")
+    assert all((sx[c][s] == sx[c]["예시"]).all() for c in ("loss_n", "median_gap", "bp_gap_median") for s in ("1~3월도", "없음")), "75·80세 ※ 변화 0 아님 → 문장 고칠 것"   # 낮음 2
     bm = sw.loc[("defer", "ii_만기+1년", "가", "B")]
     star_l = (f"65세 첫해 ※ 해석 민감도(감사 M1; 표 5-5의 {len(sw)}칸 = 판 (i)·(ii) 5해석 × 기본판·연기판 × ★ 칸 사람 A·B (가)(나)(다), 반올림 전, 기준 대비): "
               + "; ".join(sline(s) for s in ("1~3월도", "없음")) + ". 연기판 (ii) 만기 1년 늦게 사람 B (가): "
@@ -1102,31 +1104,39 @@ def build_doc(run: Path, rbar: float, period: str) -> Path:
 
 
 def doc_diff(md: str, html: str, pdf: str) -> list[str]:
-    """md → html: 표 수·칸 수·칸마다 숫자 토큰(순서대로) 같음. pdf(텍스트, 공백 지움): md 표의 다섯 자리 이상 숫자가 모두 같은 순서로 있음. 반환 = 문제 목록."""
+    """숫자 토큰 = 부호(+, -; 유니코드 마이너스 − = 하이픈) 붙은 숫자, 끝 마침표·쉼표 뗌. md → html: 표 수·칸 수·칸마다 토큰, 본문 전체(표·문장)
+    토큰이 같은 순서로 같음. pdf: md 본문 전체 토큰이 개수까지 모두 있음(쪽마다 되풀이되는 표 머리 때문에 pdf에 더 있는 것은 허용). 반환 = 문제 목록.
+    정리 재감사 낮음 1(2026-11-08): 표 칸만·부호 없이 보던 것을 본문 문장·부호까지 넓힘."""
     import html as H, re
-    tok = lambda s: re.findall(r"\d[\d,.]*", s)
+    from collections import Counter
+    tok = lambda s: [t.rstrip(".,") for t in re.findall(r"[+-]?\d[\d,.]*", s.replace("−", "-"))]
     L = md.splitlines(); nt, nh = sum(l.startswith("|---") for l in L), html.count("<table")
     mc = [tok(c) for l in L if l.startswith("|") and not l.startswith("|---") for c in l.strip()[1:-1].split(" | ")]
     hc = [tok(H.unescape(re.sub(r"<[^>]+>", "", c))) for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", html, re.S)]
-    pt, i, miss = re.sub(r"\s", "", pdf), 0, []
-    key = [t for c in mc for t in c if len(t) >= 5]
-    for t in key:                                     # 앞 숫자 다음 자리부터 찾기 = 순서까지 대조
-        j = pt.find(t, i); miss += [t] if j < 0 else []; i = i if j < 0 else j + len(t)
+    a = tok(re.sub(r"(?m)^([-*] )?\d+\. ", "", md))                                  # 목록 번호(mistune이 <ol>로 바꿔 글자로 안 남음)는 뺌
+    b = tok(H.unescape(re.sub(r"<[^>]+>", " ", html.split("<body>", 1)[-1])))
+    k = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), None if len(a) == len(b) else min(len(a), len(b)))
+    miss = Counter(a) - Counter(tok(pdf))
     return ([f"표 수 md {nt} ≠ html {nh}"] if nt != nh else []) + ([f"칸 수 md {len(mc)} ≠ html {len(hc)}"] if len(mc) != len(hc) else []) \
-        + [f"칸 {k} 숫자 md {a} ≠ html {b}" for k, (a, b) in enumerate(zip(mc, hc)) if a != b][:5] \
-        + ([f"pdf 대조 숫자 {len(key)}개뿐"] if len(key) < 100 else []) + ([f"pdf에 없거나 순서가 다른 숫자 {len(miss)}개: {miss[:5]}"] if miss else [])
+        + [f"칸 {j} 숫자 md {x} ≠ html {y}" for j, (x, y) in enumerate(zip(mc, hc)) if x != y][:5] \
+        + ([f"본문 숫자 {k}번째부터 md {a[k:k + 3]} ≠ html {b[k:k + 3]} (md {len(a)}개·html {len(b)}개)"] if k is not None else []) \
+        + ([f"pdf 대조 숫자 {len(a)}개뿐"] if len(a) < 100 else []) + ([f"pdf에 없거나 모자란 숫자 {sum(miss.values())}개: {list(miss)[:5]}"] if miss else [])
 
 
 def doc_check(md: Path) -> None:
     """정리 감사 L3(2026-11-08): html·pdf가 md와 같은 내용인지(doc_diff). 다르면 실행을 멈춘다."""
-    import fitz
+    import fitz, re
     with fitz.open(md.with_suffix(".pdf")) as d:
         pdf = "".join(p.get_text() for p in d)
     txt, html = md.read_text(encoding="utf-8"), md.with_suffix(".html").read_text(encoding="utf-8")
     bad = doc_diff(txt, html, pdf)
     assert not bad, "결과 문서 html·pdf ≠ md: " + "; ".join(bad)
     assert doc_diff(txt, html.replace("<td>", "<td>9", 1), pdf) and doc_diff(txt, html, pdf[:len(pdf) // 2])   # 점검이 바뀐 html·잘린 pdf를 잡는지
-    log(f"문서 대조 통과: 표 {html.count('<table')}개·칸 {html.count('<td>') + html.count('<th>')}개 md = html, pdf 숫자 확인")
+    s = "+0.167" if "+0.167" in html else re.search(r"\+\d[\d.]*", html).group()   # 낮음 1: 부호만 뒤집은 가짜(+0.167 → −0.167)도 잡는지
+    fake = doc_diff(txt, html.replace(s, "−" + s[1:], 1), pdf.replace(s, "−" + s[1:], 1))
+    assert any("html" in x for x in fake) and any("pdf" in x for x in fake), fake
+    log(f"문서 대조 통과: 표 {html.count('<table')}개·칸 {html.count('<td>') + html.count('<th>')}개·본문 숫자 md = html, pdf 숫자 확인; "
+        f"가짜 부호({s} → −{s[1:]}) 점검이 멈춤: {fake}")
 
 
 if __name__ == "__main__":
