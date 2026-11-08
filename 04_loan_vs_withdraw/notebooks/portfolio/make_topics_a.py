@@ -140,7 +140,7 @@ NOTE
 - `results/pilot9_A_window_mde/`: `vintage_summary.csv`(빈티지별 구별 가능 최소 차이), `common_window.csv`(빈티지별 공통 기간).
 - `results/pilot9_C_real_inputs/`: `C2_check_index_vs_real_overlap.csv`(실제 기준가 대 '공시 비중 × 지수' 계산의 상관·평균차·추적오차, 시차 0~2일).
 - `results/pilot7/`: `T2_panel_ext_reg.csv`(19개 운용사 패널 회귀). 모두 요약 표이고 기준가·보수·글라이드 원값은 없습니다.
-- 코드: `../04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py`(그림·README), `notebooks/pilot9/_gen_A_simple.py`·`_gen_A_window_mde.py`(원 계산 노트북 생성기), `notebooks/pilot7/T2_같은빈티지괴리.py`(패널), 입력 생성은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`. 두 생성기는 원 저장소 폴더 구조(같은 폴더의 `_build_C_real_inputs.py`를 import)를 전제로 해 그대로는 돌지 않습니다 — `_build_C_real_inputs.py`와 같은 폴더에 두고 실행해야 합니다. 기준가·보수 받는 코드는 `../src/pension_lab/fetch/`(`kofia_tdf.py`·`kofia_h_uh_nav.py`·`tdf_fee_extract.py`·`tdfext_fee_extract.py`).
+- 코드: `../04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py`(그림·README), `notebooks/pilot9/_gen_A_simple.py`·`_gen_A_window_mde.py`(원 계산 노트북 생성기), `notebooks/pilot7/T2_같은빈티지괴리.py`(패널), 입력 생성은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`. 두 생성기는 이 저장소 구조에 맞춰 경로만 고쳤습니다(`_build_C_real_inputs.py`를 `../01_downturn_timing/notebooks/pilot9/`에서 import). 고친 뒤 import 경로가 풀리는 것까지만 확인했고 전체 실행은 하지 않았습니다(실행하면 `$PENSION_DATA_ROOT/results/` 아래 결과를 다시 씀). 기준가·보수 받는 코드는 `../src/pension_lab/fetch/`(`kofia_tdf.py`·`kofia_h_uh_nav.py`·`tdf_fee_extract.py`·`tdfext_fee_extract.py`).
 - RUN1
 
 NOTE

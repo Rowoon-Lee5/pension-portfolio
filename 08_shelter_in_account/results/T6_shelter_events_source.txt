@@ -1,0 +1,15 @@
+$PENSION_DATA_ROOT/results/pilot9_20261013/C_multi_20261017/events_monthly.csv	sha256=58df39f1c3741c1e818acb3d40916205f5f664e69f3c2e5e41457407cf08086c	rows=63
+$PENSION_DATA_ROOT/processed/multicountry_returns_20261017.csv	sha256=6cec1cd8cecbf90b0bd72fe7b0d8a5f1af2f254bce3dd48cbfbc5562c54c0b95	rows=317248
+$PENSION_DATA_ROOT/raw/equity_global/french/F-F_Research_Data_Factors.csv	sha256=d7d7fe37b150b5b15c9c069b3ba101dfe1af568c6d7b5db6e73cd0a6c0c9e5e5	rows=1304
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/Austrlia.Dat	sha256=87a06277a82e58a96b81e191400f672676543cfc6aaec0fe0108f82189ccec22
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/Canada.Dat	sha256=a70cb5627d2818a37f34e9395c50004b2256a7e6ca746c2f984082cad4949ce9
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/Germany.Dat	sha256=e05e5acda276a2442573fc2d50d4f669df15c153857fe1aefd9e0053bf6645d8
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/France.Dat	sha256=cbd4f1d14938b07b298ea0cee074ccbeddb847de252a09389cff440d02c3f26d
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/UK.Dat	sha256=6bf394692da421e128820cd5ad72d9076b1c51c1b4b42d8d4503524c00bcf416
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/Japan.Dat	sha256=f4cd2d8f3ee484ea29b7884312b4f80c0c93de86ee62958f70f08cea0fa5cb0a
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/Norway.Dat	sha256=a5f61588a6ce6b9d368bf1ce7aea2e6e7d4a64c7c2e126b514e8ddad8fa8562b
+$PENSION_DATA_ROOT/raw/equity_global/french_intl/Sweden.Dat	sha256=74e4df1305ed34af8813c5d3607ae56b2204c16d20d9dff2e1aaa6440e946a20
+pension_lab.pilot7.samples()['KR 1991~'][eq·cash·bd] 내용	sha256=a2b7d15a9aaf7c1b8e0d21cdc59e60b6360050a554de89eb25d289c20078427b	rows=425
+사건별·규칙별·안전자산별 R = 피신 금액 ÷ 보유 금액(복귀 신호 달 기준; 신호 없음 = 자료 끝). 판정 규칙: `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록).
+9개국 사건 = C_multi events_monthly.csv 63건(재현 assert, (a) 신호월 = recovery 열, (b) = rearm_month 열과 일치 assert). 한국 = pilot7 KR 1991~ eq에 같은 규칙.
+생성: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py, 원 연구 저장소 make_topics_b.py 커밋 66d40c1eca65875c0e68921ea98fd0a5b3b1c301을 옮김

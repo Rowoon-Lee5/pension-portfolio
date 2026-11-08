@@ -10,7 +10,7 @@ import nbformat as nbf
 from nbclient import NotebookClient
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT.parent / "src"))
 from pension_lab import runrecord as rr, paths  # noqa: E402
 
 NB_PATH = ROOT / "notebooks" / "pilot9" / "A_window_mde_20261026.ipynb"
@@ -102,7 +102,7 @@ md("""## 한계
 
 nb.cells = cells
 nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
-os.environ["PYTHONPATH"] = str(ROOT / "src")
+os.environ["PYTHONPATH"] = str(ROOT.parent / "src")
 NotebookClient(nb, timeout=1800, kernel_name="python3", resources={"metadata": {"path": str(NB_PATH.parent)}}).execute()
 rr.save_executed(nb, NB_PATH)
 NBM = OUTD / "nb_meta"; NBM.mkdir(parents=True, exist_ok=True)

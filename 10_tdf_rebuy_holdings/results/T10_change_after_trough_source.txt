@@ -1,0 +1,7 @@
+$PENSION_DATA_ROOT/results/pilot10_20261017/T1_rebuy/T1c_calib_points.csv	sha256=4faf099d8f316f135f9aab1c183e99d986190096701e68c41646ce4e41eef9a3	rows=2094
+$PENSION_DATA_ROOT/results/pilot8_20261010/T1d_desc/t1d_rows.csv	sha256=3fc37cf0c89f2f7bf7b8b6371a5344a29c7cb285e334bcab6f9f28780f0a3c68	rows=325
+$PENSION_DATA_ROOT/results/pilot8_20261010/T1_reduced/t1r_glide_at_reports.csv	sha256=387f2272dea9ae87d1a92a0005c00d96a54fc7774f439a4f8464d77973c096be	rows=462
+2022-09-30(E2021 저점) 이전 마지막 보고서 대비 1·2·4번째 뒤 보고서의 격차 변화. 경계 = [하(뒤) − 상(기준), 상(뒤) − 하(기준)]. 판정_설계서 = `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록).
+감사(H3) 뒤 규칙, 결과 뒤 변경: 경계불성립 = 기준·뒤 보고서 중 하나라도 점 S_1이 [S_6b_Fbd, S_6a_Feq] 밖. 이때 방향 판정은 '판정 보류(경계 불성립)'(판정 열). '가려낼 수 없음'은 그대로.
+재감사(R1-H1) 뒤 같은 규칙을 기준 수준에도: 기준판정_보류규칙 = 기준 보고서 점이 경계 밖이면 '낮음/높음'을 보류. 설계서 판정은 기준판정 열.
+생성: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py, 원 연구 저장소 make_topics_b.py 커밋 66d40c1eca65875c0e68921ea98fd0a5b3b1c301을 옮김

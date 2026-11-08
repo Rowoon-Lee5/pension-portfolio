@@ -11,7 +11,7 @@ import nbformat as nbf
 from nbclient import NotebookClient
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT.parent / "src"))
 from pension_lab import runrecord as rr, paths  # noqa: E402
 
 NB_PATH = ROOT / "notebooks" / "pilot9" / "A_simple_20261017.ipynb"
@@ -36,7 +36,7 @@ md("""# pilot9 A 간단 테스트: 같은 2055 TDF, 운용사에 따라 최종 �
 code(r"""import sys, itertools
 from pathlib import Path
 import numpy as np, pandas as pd
-sys.path.insert(0, str(Path.cwd()))                          # notebooks/pilot9 (입력 생성기 함수 import)
+sys.path.insert(0, str(Path.cwd().parents[2] / "01_downturn_timing/notebooks/pilot9"))   # 입력 생성기 함수 import(공개 저장소 위치)
 from _build_C_real_inputs import glide_w, fee_pct, fee_table
 from pension_lab import pilot7 as P7, pilot9 as P9, io, paths
 from pension_lab.bootstrap import paired_resample_paths
@@ -283,12 +283,12 @@ print("avg_UH: 평균 차 %+.2f%%p/년, 표준오차 %.2f%%p, t = %.2f (%d개월
 
 nb.cells = cells
 nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
-os.environ["PYTHONPATH"] = str(ROOT / "src")
+os.environ["PYTHONPATH"] = str(ROOT.parent / "src")
 NotebookClient(nb, timeout=7200, kernel_name="python3", resources={"metadata": {"path": str(NB_PATH.parent)}}).execute()
 rr.save_executed(nb, NB_PATH)
 NBM = OUTD / "nb_meta"; NBM.mkdir(parents=True, exist_ok=True)
-extra = "seed=20261008\nN=10000\nT=360\nblocks=1,PW,12\n" + "".join(f"input {p} sha256={rr.raw_sha256(p)}\n" for p in INPUTS + [ROOT / "notebooks/pilot9/_build_C_real_inputs.py"]) \
+extra = "seed=20261008\nN=10000\nT=360\nblocks=1,PW,12\n" + "".join(f"input {p} sha256={rr.raw_sha256(p)}\n" for p in INPUTS + [ROOT.parent / "01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py"]) \
         + "".join(f"result {p.name} sha256={rr.raw_sha256(p)}\n" for p in sorted(OUTD.glob("*.csv")))   # 결과 CSV 해시(문서 단계 추가)
 rr.write_run_meta(NBM, Path(__file__), ["src/pension_lab/pilot9.py", "src/pension_lab/pilot7.py", "src/pension_lab/bootstrap.py",
-                                         "notebooks/pilot9/_build_C_real_inputs.py"], extra)
+                                         "01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py"], extra)
 print("실행완료 저장:", NB_PATH, NB_PATH.stat().st_size, "bytes")

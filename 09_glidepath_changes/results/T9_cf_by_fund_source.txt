@@ -1,0 +1,10 @@
+$PENSION_DATA_ROOT/raw/fund_tdf/glidepath_disclosed_hist_20261012fix.csv	sha256=719fe8e96d2c8142795134e5de6fd504d33d9d936583608cbb9c55b34b40bbfb	rows=28153
+$PENSION_DATA_ROOT/results/pilot9_20261013/C_real_20261017/inputs/C2_components_monthly.csv	sha256=071331c3e3da817fdc933bccad5613c8e194fe905314b85be36e2311afb736a2	rows=560
+$PENSION_DATA_ROOT/results/simpletest_20261027/T3/full_r1_20261027_0433/T3_07_decision_events.csv	sha256=c349da2320f2baf85df334fb2b0d67eb8a05bf13a2024859b3078dd6009ae050	rows=551
+$PENSION_DATA_ROOT/results/simpletest_20261027/T3/full_r1_20261027_0433/T3_13b_cf_floor_used.csv	sha256=c02fbb0e33f0284cd0f2160bfba48bbc5da794bda5fedbf8bb5efa4da6f20755	rows=7
+$PENSION_DATA_ROOT/results/pilot10_20261017/I2x_hist/results_lt2020/lt2020_events.csv	sha256=c8eaa5a4709336bc8903219dca0f1f56921d57be13c0fdbcee4b5b87176a46b2	rows=5
+펀드별 '처음 공시 계획' 대 '실제(바뀐) 계획', 같은 실제 시장 경로(C2_components stk·bd, 원화 UH), 보수 0(두 계획 같음). 판정 = `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록).
+판독 가능 행 = h1d_r5 규칙(BAD), 곡선 = 숫자 x 2개 이상인 판, 범위 밖 끝값 고정. 실제 계획 = 그 달 수익에 대해 전달 말까지 접수된 최신 판.
+감사(H2) 뒤 추가, 결과 뒤: d_같은방법구간 = 실제 계획에 쓰인 판의 판독 방법이 첫 판과 처음 달라지기 전 달까지만 누적한 d. 원인구분 = 바닥선 밖 펀드를 방법 변경 없음 / 같은 방법 구간에서도 밖 / 방법 변경 뒤에만 차이로 나눔.
+이 저장소 판은 첫계획_평균위험비중·실제계획_평균위험비중 열을 뺌(공시 글라이드 값).
+생성: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py, 원 연구 저장소 make_topics_b.py 커밋 66d40c1eca65875c0e68921ea98fd0a5b3b1c301을 옮김
