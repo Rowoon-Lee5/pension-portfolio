@@ -133,6 +133,6 @@ DataGuide는 에프앤가이드의 유료 엑셀 애드인입니다(대학 도�
 
 | 값 | 쓰는 곳 | 출처 | 비고 |
 |---|---|---|---|
-| 연금저축계좌 담보대출: 연 5.00%(2026.01.01 기준), 한도 펀드평가액의 50%·최대 4,000만 원, 담보유지비율 140%, 기간 365일 | 04 (`src/pension_lab/pilot7.py` `LOAN`·`LOAN_LTV`·`LOAN_MAINT`·`LOAN_TERM_M`, 04 스크립트 `LOAN_CAP`) | 신한투자증권 연금저축계좌 서비스 안내 https://www.shinhansec.com/siw/pension/saving-info/saving_account_service1/view.do (1차, 원 연구의 2026-10-08 근거 대장 기록값) | 원문 스냅샷은 넣지 않음(재배포 조건 확인 안 함). 2026-11-08에 다시 열어 보지 못함. 중도상환수수료는 확인하지 못해 0으로 둠 |
+| 연금저축계좌 담보대출: 연 5.00%(시장상황에 따라 변동 가능), 한도 연금저축계좌 내 펀드 평가금액의 50%·최대 4,000만 원, 담보유지비율 대출금액의 140%, 기간 365일(연장 가능) | 04 (`src/pension_lab/pilot7.py` `LOAN`·`LOAN_LTV`·`LOAN_MAINT`·`LOAN_TERM_M`, 04 스크립트 `LOAN_CAP`) | 신한투자증권 연금저축계좌 서비스 안내 https://www.shinhansec.com/siw/pension/saving-info/saving_account_service1/view.do (1차, 2026-11-09 페이지 확인(내용 요약 기록), 준법감시인 심사필 제26-1141호 2026-07-16~2027-07-17) | 원문 HTML은 넣지 않음(재배포 조건 확인 안 함). 페이지에 조건 기준일 없음. 중도상환수수료는 페이지에 없음 → 0으로 둠 |
 | 비교 대출 금리: 은행 일반신용대출 연 6.33%, 소액대출 연 6.55%(예금은행 신규취급액 기준, 2026년 8월) | 04 `results/pilot7/T1_boot.csv`의 비교 행 (`src/pension_lab/pilot7.py` `LOAN`) | 한국은행 ECOS 121Y006(`BECBLA03051`·`BECBLA0301`) — 코드 주석 | 값 2개만 코드에 둠(2절 ECOS 조건). '그때 단기금리+가산폭' 행은 같은 달 CD91 평균과의 차이를 가산폭으로 씀 |
 | 세율: 연금저축 세액공제 16.5%·13.2%, 55세 전 인출(기타소득세) 16.5%, 연금소득세 5.5%, 일반계좌 배당소득세 15.4% | 04·05 (`src/pension_lab/aftertax.py` `CREDIT_LOW`·`CREDIT_HIGH`·`ETC_TAX`·`PENSION_UNDER70`·`TAX_FINANCIAL`) | 소득세법 §59의3①·§21①21·§129①5의2·§129①6나 등(국가법령정보센터) — 조문은 코드 주석 | 2026년 기준. 세법 개정 반영 안 함 |

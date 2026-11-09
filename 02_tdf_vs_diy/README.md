@@ -3,7 +3,7 @@
 ## 문제의식
 TDF(타깃데이트펀드)는 은퇴 시점에 맞춰 주식·채권 비중을 알아서 바꿔 줍니다. 편하지만 보수가 붙습니다. 같은 비중을 ETF로 직접 맞추면 수익률이 얼마나 다를지, 그 차이가 보수 때문인지 다른 이유 때문인지 나눠 봤습니다.
 
-선행연구와의 관계: 미국 TDF의 성과 열위를 다룬 Brown & Davies, "Off Target: On the Underperformance of Target-Date Funds"(SSRN 3707755, 미게재 원고)와 같은 질문을 한국 TDF에 던진 작업입니다. 원문을 열지 못해 그 논문의 수치와는 직접 비교하지 않았습니다.
+선행연구와의 관계: 미국 TDF의 성과 열위를 다룬 Brown & Davies, "Off Target: On the Underperformance of Target-Date Funds"(SSRN 3707755, 2020-11 게시·2023-10 개정, 미게재 원고)와 같은 질문을 한국 TDF에 던진 작업입니다. 그 논문 초록에는 연 수치가 없고(2019년 초과비용 86억 달러), 저자 인터뷰(Rational Reminder 374회)에서는 복제 포트폴리오 대비 연 약 1%, 그중 약 55bp가 보수라고 했습니다. 흔히 인용되는 '연 1.28%·약 3분의 2가 보수'는 원문으로 확인하지 못했습니다. 본문 수치와는 직접 비교하지 않았습니다.
 
 ## 한 일
 - 대상: KB·삼성·한국투자 TDF 19개, 2022~2026 월간(56개월). 운용사별로 같은 가중치를 줘 평균했습니다(운용사 동일가중).
@@ -44,4 +44,4 @@ TDF(타깃데이트펀드)는 은퇴 시점에 맞춰 주식·채권 비중을 �
 - 코드: `notebooks/pilot7/T7_TDF_vs_직접.py` (공통 모듈 `pilot7`·`tdf_style`·`glidepath`·`perfstats`·`bootstrap`). 공시 자료를 받는 코드는 `../src/pension_lab/fetch/`(`kofia_tdf.py` 기준가, `tdf_fee_extract.py`·`tdfext_fee_extract.py` 보수, `mgmt_report_tdf.py` 자산운용보고서).
 
 ---
-**English summary.** Across six comparisons (three periods × two replication methods), nineteen Korean target-date funds from three managers had point estimates 0.9–2.9 percentage points a year below a do-it-yourself replica of the same allocation over 2022–2026; only two of the six are distinguishable from zero (HAC p<0.05). Explicit fees are 1.28 pp a year. The non-fee remainder (about −1.3 to −1.4 pp with the reported hedge ratios) swings widely with the currency-hedging assumption and across managers. This mirrors the question of Brown & Davies' "Off Target" for the US, but their numbers were not compared because the original paper could not be accessed.
+**English summary.** Across six comparisons (three periods × two replication methods), nineteen Korean target-date funds from three managers had point estimates 0.9–2.9 percentage points a year below a do-it-yourself replica of the same allocation over 2022–2026; only two of the six are distinguishable from zero (HAC p<0.05). Explicit fees are 1.28 pp a year. The non-fee remainder (about −1.3 to −1.4 pp with the reported hedge ratios) swings widely with the currency-hedging assumption and across managers. This mirrors the question of Brown & Davies' "Off Target" for the US, but their numbers were not compared directly: the abstract gives no annual figure (US$8.6 billion of excess costs in 2019); in an interview (Rational Reminder episode 374) the authors put the gap at about 1% a year against a replicating portfolio, about 55 bp of it fees. The often-quoted '1.28% a year, about two-thirds fees' could not be verified against the paper.

@@ -8072,7 +8072,7 @@ z
     <use xlink:href="#MalgunGothic-c" transform="translate(5138.609375 0)"/>
     <use xlink:href="#MalgunGothic-11" transform="translate(5169.078125 0)"/>
    </g>
-   <!-- * 3·6개월 = 만기(365일) 전에 갚는 경우. 중도상환수수료는 확인하지 못해 0으로 둠(대출에 유리한 쪽). ①은 반대매매가 없다고 본 값. -->
+   <!-- * 3·6개월 = 만기(365일) 전에 갚는 경우. 중도상환수수료는 상품 페이지에 없어 0으로 둠(대출에 유리한 쪽). ①은 반대매매가 없다고 본 값. -->
    <g style="fill: #666666" transform="translate(12.96 510.676537) scale(0.072 -0.072)">
     <defs>
      <path id="MalgunGothic-158" d="M 700 1644 
