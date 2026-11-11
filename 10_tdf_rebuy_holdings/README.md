@@ -48,7 +48,7 @@ TDF는 나이에 맞춰 정한 주식 비중(목표)을 유지해야 합니다. 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 분기 중앙값과 판정 개수), 읽은 파일 sha256(`_source.txt`).
 - `results/`: `T10_gap_by_report.csv`(보고서별 '실제 − 목표' 격차의 점·하한·상한과 점이 경계 밖인지), `T10_change_after_trough.csv`(펀드별 저점 직전 수준과 1·2·4번째 뒤 보고서 변화, 설계서 판정과 결과 뒤 보류 규칙 판정), `T10_pilot8_mismatch.csv`(원 연구 두 계산의 값 차이). 보유내역 원행·비중 값·공시 목표 값은 넣지 않았고 격차만 넣었습니다(비중과 격차를 함께 두면 공시 글라이드 값이 되살아나므로). 다만 2026년 공시 대비 격차 열(`g_S2026_own`)은 외부에서 구한 현재 투자설명서 글라이드와 합치면 보고서별 비중과 과거 목표를 되살릴 수 있습니다(이 저장소 파일만으로는 안 됨).
 - 판정 규칙: `../08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md` 10번.
-- 코드: `../08_shelter_in_account/notebooks/portfolio/make_topics_b.py`(08~11 공용). 자산운용보고서 받는 코드는 `../src/pension_lab/fetch/mgmt_report_tdf.py`.
+- 코드: `../08_shelter_in_account/notebooks/portfolio/make_topics_b.py`(08·10·11 공용). 자산운용보고서 받는 코드는 `../src/pension_lab/fetch/mgmt_report_tdf.py`.
 - 입력(이 저장소에 없음): 원 연구가 보유내역에서 만든 보고서별 위험자산 비중(`results/pilot10_20261017/T1_rebuy/T1c_calib_points.csv`, 대조용 `results/pilot8_20261010/T1d_desc/t1d_rows.csv`)과 보고서 날짜의 공시 목표(`results/pilot8_20261010/T1_reduced/t1r_glide_at_reports.csv`). 출처는 `../DATA_SOURCES.md`.
 - 실행: 저장소 루트에서 `python 08_shelter_in_account/notebooks/portfolio/make_topics_b.py t10` — 원자료와 원 연구 결과 파일(위 '입력')이 `$PENSION_DATA_ROOT` 아래 원 연구와 같은 경로에 있어야 돕니다(`../DATA_SOURCES.md`). 이 저장소만으로는 돌지 않습니다.
 

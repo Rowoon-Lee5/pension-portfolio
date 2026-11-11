@@ -1,6 +1,6 @@
 # 연금 투자 의사결정 시뮬레이션 포트폴리오
 
-개인이 연금저축·TDF·노란우산공제 같은 노후 상품을 고를 때 실제로 부딪히는 질문을, 과거 수익률 재표본(부트스트랩)과 세법·제도 규칙을 넣은 시뮬레이션으로 따져 본 작업입니다. 01~03은 대표작, 04~11은 기존 파일럿 결과와 짧은 추가 계산을 한 질문씩 정리한 짧은 주제입니다. README 숫자 일부는 저장된 결과 파일에서 다시 계산해 assert합니다(`check_numbers.py`, 확인 범위는 그 파일 맨 위에 적음). 결과가 말해 주지 않는 것과 한계를 따로 적었습니다.
+개인이 연금저축·TDF·노란우산공제 같은 노후 상품을 고를 때 실제로 부딪히는 질문을, 과거 수익률 재표본(부트스트랩)과 세법·제도 규칙을 넣은 시뮬레이션으로 따져 본 작업입니다. 01~03은 대표작, 04~08·10~12는 기존 파일럿 결과와 짧은 추가 계산을 한 질문씩 정리한 짧은 주제입니다(09번은 뺐습니다). README 숫자 일부는 저장된 결과 파일에서 다시 계산해 assert합니다(`check_numbers.py`, 확인 범위는 그 파일 맨 위에 적음). 결과가 말해 주지 않는 것과 한계를 따로 적었습니다.
 
 ## 대표작
 
@@ -10,7 +10,7 @@
 | TDF 대 직접 운용 | 한국 TDF 19개(3개 운용사)와 같은 비중을 직접 운용한 것의 연 수익률 차이는 비교 6개(기간 3 × 직접 운용 방식 2)에서 −0.9~−2.9%p였고, 0과 구분되는 것(HAC p<0.05)은 2개다. 보수는 연 1.28%p이고, 보수 외 나머지는 환헤지 가정에 따라 크게 바뀐다. | 스타일 분석(제약 회귀), 공시 보유내역 재구성, HAC 검정, 차이 분해 | [02_tdf_vs_diy](02_tdf_vs_diy/) |
 | 50대 자영업자: 연금저축·노란우산·예금 | 세금을 안 내는 사람(주식 100%·월 30만 원)에게 연금저축은 3·5년째 꺼내면 시작 연도의 40~44%에서 예금보다 적었고, 70세까지 두면 예금보다 적은 시작 연도가 없었다(0/21, 부트스트랩 1만 경로 중에서는 19~22%). 노란우산을 그냥 해약하면 3·5년째는 모든 시작 연도에서, 62세는 29개 중 28개에서 예금보다 적었다. | 세법·기초연금·건보료 규칙을 원문에서 확인해 모형화, 손계산 대조, 결과를 상담표로 번역 | [03_selfemployed_50s](03_selfemployed_50s/) |
 
-## 짧은 주제 (04~11)
+## 짧은 주제 (04~08, 10~12)
 
 | 주제 | 한 줄 결론 | 보여 주는 능력 | 폴더 |
 |---|---|---|---|
@@ -19,9 +19,9 @@
 | 목돈 한 번에 대 나눠 넣기 | 다국가 1년 창에서 한 번에 넣기가 59·66%, 고점 시작에서도 64·66% 이겼다. 위험회피 γ=10이면 주식 100%의 모든 표본에서 나눠 넣기의 확실성등가가 더 높았다. | 다국가 표본, 나라 묶음 부트스트랩·Wilson 구간, 확실성등가(CER) | [06_lumpsum_vs_dca](06_lumpsum_vs_dca/) |
 | 운용사별 2055 TDF | 투자설명서대로면 30년 금액이 운용사 쌍별 1.02~1.20배 달랐지만, 실제 수익률은 설명서 계산과 연 4.7~8.6%p 흔들렸고, 2055 빈티지 공통 23개월로 구별할 수 있는 최소 연 차이는 9.5%p였다. | 공시 비중 복제·추적오차, 검정력(MDE), 운용사 군집 패널(wild cluster bootstrap) | [07_tdf_glidepath_by_manager](07_tdf_glidepath_by_manager/) |
 | 하락장에 계좌 안에서 피신 | 9개국 하락장 63번에서 MMF·채권으로 피했다가 전고점 회복 뒤 돌아오면 보유 대비 중앙 0.80·0.87배(90% 구간 상한 0.846·0.947)였고, 저점 대비 20% 반등 뒤 돌아오면 0.90·0.94배로 보유와 가려낼 수 없었다. 해지(16.5%) 대비 판정은 연금 수령세를 넣으면 바뀌는 칸이 있다(결과 뒤 민감도). | 사건 연구, 확인 연도 묶음 부트스트랩, 결과 뒤 찾은 설계 전제 오류 공개 | [08_shelter_in_account](08_shelter_in_account/) |
-| TDF 글라이드패스 변경 이력 | TDF 35개 중 처음 계획과 비교할 수 있는 33개에서 판독 잡음 바닥선 밖 차이는 17개(가장 큰 차이 로그 −12.01%, 115개월)였고, 그중 7개는 판독 방법이 바뀐 뒤에만 차이가 생겨(결과 뒤 구분) 계획 변경과 나눌 수 없었다. 변경 9번 중 7번이 사후에 구분한 하락 국면 안이었지만 국면 2개에 몰려 있어 검정력이 없다. | 투자설명서 공시 이력으로 반사실 적립, 측정 잡음 바닥선, 미래 정보 차단 | [09_glidepath_changes](09_glidepath_changes/) |
 | TDF는 하락장 뒤 다시 사나 | 분기 보고서 349개(19개 펀드)로 2022년 하락장 뒤 '실제 − 목표' 변화를 쟀더니 1·2·4분기 뒤 방향(올라옴·벌어짐)이 나온 칸이 0개였다(2분기 뒤 3칸은 계산 전 규칙으로는 '더 벌어짐'이었으나 결과 뒤 추가한 규칙으로 보류). 보고서에 안 실린 몫 때문에 변화 경계 폭이 중앙 30%p라 측정 한계에서 거의 구조적으로 나온 결과다. | 보유내역 경계(부분 식별), 사전 판정 규칙, 결과 뒤 규칙 변경 공개 | [10_tdf_rebuy_holdings](10_tdf_rebuy_holdings/) |
 | 원화 30년 주식 | 국내주식만 30년 적립하면 다시 뽑은 경로의 약 13%가 물가 뺀 원금보다 적었다(표본 3개·블록 3종에 따라 10.2~26.5%, 블록 120개월 칸을 넣으면 0.5~26.5%). 겹치지 않는 30년 기간이 1개뿐이라 조합 사이 차이는 가려낼 수 없었다. 하락 국면 11번 모두 원화 미국주식이 덜 빠졌지만 5번은 미국주식도 원화로 손실이었다. | 블록 부트스트랩 민감도, 검정력(MDE), 환노출 국면 비교 | [11_krw_30y](11_krw_30y/) |
+| 급락장 AI 연금 상담 감사(잠정) | 프롬프트 15개를 5번씩 물었더니 '해지하라·다 팔라'고 직접 권한 응답은 0건이었다. 세법 진술이 1개 이상 틀린 응답은 claude-opus-5-5 8.0%, gemini-3.8-flash 17.4%(23건뿐), 이름을 가린 모델X 56.0%였다. LLM 채점자가 시험 대상 Claude와 같은 회사 모델이고 사람 채점 전이라 잠정이다. | 응답 보기 전 정답표(법령 원문)·채점 기준 고정, LLM 보조 채점과 이해상충 공개, 이용약관 확인 뒤 공개 범위 결정 | [12_ai_advice_audit](12_ai_advice_audit/) |
 
 ## 폴더 구조
 
@@ -35,16 +35,17 @@ data/                    재배포 조건을 확인한 공공 원자료만 (한�
 03_selfemployed_50s/     README · results/ · notebooks/ · docs/(설계서) · references/(법령 원문 발췌·근거 메모)
 04_loan_vs_withdraw/ ~ 07_tdf_glidepath_by_manager/   README · figures/ · results/ · notebooks/
                          (04~07 그림·README 스크립트: 04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py)
-08_shelter_in_account/ ~ 11_krw_30y/   README · figures/ · results/ · notebooks/ (08은 docs/에 설계서)
-                         (08~11 그림·README 스크립트: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py)
+08_shelter_in_account/, 10_tdf_rebuy_holdings/, 11_krw_30y/   README · figures/ · results/ · notebooks/ (08은 docs/에 설계서)
+                         (08·10·11 그림·README 스크립트: 08_shelter_in_account/notebooks/portfolio/make_topics_b.py)
+12_ai_advice_audit/      README · docs/(응답 보기 전 고정한 프롬프트·정답표·채점 기준) · results/ · figures/ · notebooks/
 ```
 
 ## 재현 방법
 
 1. Python 3.12 이상. `pip install -r requirements.txt` 뒤 `pip install -e .` (공통 모듈 `pension_lab`을 설치).
-2. **숫자 대조(원자료 없이 됨)**: `python check_numbers.py` — `results/`·`figures/*_data.csv`에서 01 해지 부호, 01 더 담기 규칙(234칸·문턱별 범위·예시 칸), 03 상담표 전체 칸, 01~11 README와 루트 표의 숫자 문장을 다시 계산해 assert합니다. 문장마다 'README의 이 문장 숫자 = 이 CSV의 이 칸(반올림 규칙 포함)'으로 대조하고, 같은 문장이 여러 번 나오면 모두 같아야 통과합니다. `python check_numbers.py --selftest`는 README 사본의 숫자를 하나씩 틀리게 바꿔 대조가 실패하는지 시험합니다.
+2. **숫자 대조(원자료 없이 됨)**: `python check_numbers.py` — `results/`·`figures/*_data.csv`에서 01 해지 부호, 01 더 담기 규칙(234칸·문턱별 범위·예시 칸), 03 상담표 전체 칸, 01~12 README와 루트 표의 숫자 문장을 다시 계산해 assert합니다. 문장마다 'README의 이 문장 숫자 = 이 CSV의 이 칸(반올림 규칙 포함)'으로 대조하고, 같은 문장이 여러 번 나오면 모두 같아야 통과합니다. `python check_numbers.py --selftest`는 README 사본의 숫자를 하나씩 틀리게 바꿔 대조가 실패하는지 시험합니다.
 3. **시뮬레이션 다시 돌리기(원자료 필요)**: 국내 주식·채권 수익률이 에프앤가이드 DataGuide(유료 라이선스) 자료라 이 저장소에 넣지 않았습니다. `DATA_SOURCES.md`의 절차대로 자료를 받아 한 폴더에 두고 환경변수 `PENSION_DATA_ROOT`로 그 폴더를 가리킨 뒤(설정하지 않으면 저장소의 `data/`), 각 주제 README의 '코드' 절 순서대로 실행합니다. 코드는 원래 연구 저장소의 파일을 옮긴 것이라 문서 안 경로는 `$PENSION_DATA_ROOT/...`로 적었고, 폴더 구조가 원 저장소와 달라 일부 스크립트는 경로를 맞춰야 돌아갑니다.
-4. 그림: `01_downturn_timing/notebooks/portfolio/make_figures.py`(그림 1·2·3). 저장소의 결과 CSV만 읽어 그립니다(새 계산 없음). `PENSION_DATA_ROOT`를 설정하면 `$PENSION_DATA_ROOT/results/portfolio_figures_20261107/`에도 같은 파일을 씁니다. 04~07의 그림·README는 `04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py`로 만듭니다(05·06은 저장소 결과만으로, 04는 원자료가 있으면 부트스트랩부터, 07은 공시 글라이드·보수 입력이 있어야 돎 — 각 README '파일' 절). 08~11은 `08_shelter_in_account/notebooks/portfolio/make_topics_b.py`로 만듭니다(11은 저장소 결과만으로, 08·09·10은 `PENSION_DATA_ROOT`의 원자료·중간 결과가 있어야 돎 — 각 README '파일' 절).
+4. 그림: `01_downturn_timing/notebooks/portfolio/make_figures.py`(그림 1·2·3). 저장소의 결과 CSV만 읽어 그립니다(새 계산 없음). `PENSION_DATA_ROOT`를 설정하면 `$PENSION_DATA_ROOT/results/portfolio_figures_20261107/`에도 같은 파일을 씁니다. 04~07의 그림·README는 `04_loan_vs_withdraw/notebooks/portfolio/make_topics_a.py`로 만듭니다(05·06은 저장소 결과만으로, 04는 원자료가 있으면 부트스트랩부터, 07은 공시 글라이드·보수 입력이 있어야 돎 — 각 README '파일' 절). 08·10·11은 `08_shelter_in_account/notebooks/portfolio/make_topics_b.py`로 만듭니다(11은 저장소 결과만으로, 08·10은 `PENSION_DATA_ROOT`의 원자료·중간 결과가 있어야 돎 — 각 README '파일' 절). 12는 `12_ai_advice_audit/notebooks/aggregate_F.py`로 저장소 결과만 읽어 만듭니다.
 5. **노트북 출력 지우기**: 노트북 생성기(`_gen_*.py`)는 실행본을 저장소 `.ipynb`에 씁니다. 커밋 전에 출력을 지우도록 `pip install nbstripout` 뒤 저장소에서 `nbstripout --install`을 한 번 실행하세요(`.gitattributes`에 필터가 적혀 있음). 설치하지 않았다면 `jupyter nbconvert --clear-output --inplace <노트북>`으로 지운 뒤 커밋합니다.
 
 ## 투자 권유가 아닙니다
@@ -59,4 +60,4 @@ data/                    재배포 조건을 확인한 공공 원자료만 (한�
 
 ---
 
-**English summary.** Three simulation studies of retirement-savings decisions in Korea: (1) what a first bear market costs savers who cancel, pause, or buy more (block bootstrap with placebo controls; canceling cost 0.8–6.1% of median 30-year real wealth across five samples, and a "buy the dip" rule gained about as much as adding the same extra equity evenly every month at −20% and −30% drop thresholds, and mostly less at −10%); (2) Korean target-date funds vs. replicating them yourself (point estimates of −0.9 to −2.9 pp a year across six comparisons, two of them distinguishable from zero; fees are 1.28 pp a year); (3) pension savings account vs. the 'Yellow Umbrella' small-business mutual aid vs. bank deposits for a self-employed person in their 50s, with tax, basic-pension and health-insurance rules taken from primary legal sources. Eight shorter studies (04–11) reuse pilot results or add short calculations: borrowing against a pension account instead of withdrawing, when the pension account beats a taxable account, lump-sum vs. spreading a transfer, why short return rankings cannot tell target-date fund managers apart, switching to a money-market or bond fund inside the account during a bear market, how changes to disclosed target-date glide paths changed savers' balances, whether target-date funds bought equities back after the 2022 trough (holdings bounds), and whether 30 years makes equities safe for a won-based saver. Not investment advice; licensed-vendor (FnGuide DataGuide) raw data is excluded, see DATA_SOURCES.md.
+**English summary.** Three simulation studies of retirement-savings decisions in Korea: (1) what a first bear market costs savers who cancel, pause, or buy more (block bootstrap with placebo controls; canceling cost 0.8–6.1% of median 30-year real wealth across five samples, and a "buy the dip" rule gained about as much as adding the same extra equity evenly every month at −20% and −30% drop thresholds, and mostly less at −10%); (2) Korean target-date funds vs. replicating them yourself (point estimates of −0.9 to −2.9 pp a year across six comparisons, two of them distinguishable from zero; fees are 1.28 pp a year); (3) pension savings account vs. the 'Yellow Umbrella' small-business mutual aid vs. bank deposits for a self-employed person in their 50s, with tax, basic-pension and health-insurance rules taken from primary legal sources. Nine shorter studies (04–08, 10–12) reuse pilot results or add short calculations: borrowing against a pension account instead of withdrawing, when the pension account beats a taxable account, lump-sum vs. spreading a transfer, why short return rankings cannot tell target-date fund managers apart, switching to a money-market or bond fund inside the account during a bear market, whether target-date funds bought equities back after the 2022 trough (holdings bounds), whether 30 years makes equities safe for a won-based saver, and how AI chatbots answer a pension saver right after a crash (provisional, scored by an LLM judge). Not investment advice; licensed-vendor (FnGuide DataGuide) raw data is excluded, see DATA_SOURCES.md.

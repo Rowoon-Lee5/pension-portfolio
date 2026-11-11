@@ -9,10 +9,10 @@
   02 기간별 표 전체 칸(차이·p), 점추정 범위, 보수 분해, 헤지 가정, 운용사별 나머지
   03 상담표 전체 칸, ※ 칸 수, 경계 1%p 칸, 이자 반영 시점·75·80·85·90세·3년 만기 단락 숫자
   04~07 결과 숫자(대출·담보부족, 두 통·리밸런싱, 목돈·나눠 넣기·CER, 2055 TDF 비·추적오차·MDE)
-  08~11 결과 숫자(피신 R·구간·판정·사건 수·한국 사건·자금흐름, 글라이드 변경 펀드 수·운용사 줄·가장 큰 차이,
+  08·10·11 결과 숫자(피신 R·구간·판정·사건 수·한국 사건·자금흐름,
         재매수 판정 수·경계 폭·보류, 원화 30년 비율·MDE·하락 국면)
+  12 AI 상담 감사 응답 수·권유 수·세법 틀림 비율·틀린 사실 ID·인물별·언급 비율(LLM 보조 채점 기준)
 다루지 않는 것(이 저장소 CSV로 다시 셀 수 없음): 08 9개국 구간 끝값 P5·P95는 CSV 값을 그대로 씀(부트스트랩 재실행 안 함),
-  09 '변경 9번 중 7번'·국면 수(사후 국면표가 저장소에 없음),
   03 '+0.558~+0.640'·'6,526,097원', 06 단일국 고점 창·Wilson 구간, 07 |t|·패널 기울기, 각 폴더 '한계' 절의 일부 숫자.
 
 실행: python check_numbers.py              (통과하면 폴더별 규칙 수와 'ok')
@@ -32,7 +32,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent
 D = dict(r=".", t1="01_downturn_timing", t2="02_tdf_vs_diy", t3="03_selfemployed_50s", t4="04_loan_vs_withdraw",
          t5="05_two_buckets_free_rebalancing", t6="06_lumpsum_vs_dca", t7="07_tdf_glidepath_by_manager",
-         t8="08_shelter_in_account", t9="09_glidepath_changes", t10="10_tdf_rebuy_holdings", t11="11_krw_30y")
+         t8="08_shelter_in_account", t10="10_tdf_rebuy_holdings", t11="11_krw_30y", t12="12_ai_advice_audit")
 T1, T2, T3 = ROOT / D["t1"], ROOT / D["t2"], ROOT / D["t3"]
 rd = lambda p: pd.read_csv(ROOT / p, encoding="utf-8-sig")
 U = lambda s: s.replace("-", "−")                                             # U+2212 쓰는 폴더(01·02·03 표)
@@ -481,44 +481,6 @@ def r08(R):
           n9[0], *map(f2, pk), *[f"{x:.3f}" for x in up], *map(f2, rb))
 
 
-# ── 09 ───────────────────────────────────────────────────────────────────────
-def r09(R):
-    T = rd(f"{D['t9']}/results/T9_cf_by_fund.csv")
-    NOI, OUT = "판독 오차와 구분 안 됨", ["실제 계획이 더 많음", "처음 계획이 더 많음"]
-    ok = T[T["판정"].isin([NOI] + OUT)].copy()
-    # 판정·원인구분을 CSV 글자 대신 d·바닥선·방법변경 열에서 다시 냄
-    assert (ok["판정"].eq(NOI) == (ok["d_적립"].abs() <= ok["바닥선"])).all()
-    big_ = ok["d_적립"].abs() > ok["바닥선"]
-    mc = ok["방법변경건넘"].astype(str).eq("True")
-    cause = np.select([big_ & ~mc, big_ & (ok["d_같은방법구간"].abs() > ok["바닥선"]), big_], ["none", "same", "ins"], "")
-    ok["c"] = cause
-    names = lambda c: ", ".join(f"{r.운용사} {r.빈티지}" for r in ok[ok.c == c].sort_values(["운용사", "빈티지"]).itertuples())
-    cnt = lambda c: int((ok.c == c).sum())
-    long_, short_ = ok[ok["개월"] > 12], ok[ok["개월"] <= 12]
-    R.add("t9", "**처음 계획을 지켰을 때와 비교할 수 있는 펀드는 {}개**였고(나머지 {}개는 비교 불가), 이 중 의미 있는 기간({}~{}개월)을 가진 것은 {} {}개이고, 신한·미래에셋 {}개는 첫 곡선 판이 2026-04라 {}개월 비교뿐입니다",
-          len(ok), len(T) - len(ok), int(long_["개월"].min()), int(long_["개월"].max()), "·".join(sorted(set(long_["운용사"]))), len(long_), len(short_), int(short_["개월"].max()))
-    R.add("t9", "금액 차이가 판독 잡음 바닥선보다 큰 펀드는 {}개입니다.", int(big_.sum()))
-    R.add("t9", "(결과 뒤 추가한 구분): {}개({})는 같은 방법 구간만으로도 바닥선 밖이고, {}개({})는 차이가 방법 변경 뒤에만 생겨 계획 변경과 판독 방법 차이를 나눌 수 없으며, {}개({})는 방법 변경을 건너지 않았습니다.",
-          cnt("same"), names("same"), cnt("ins"), names("ins"), cnt("none"), names("none"))
-    for mg, g in ok.groupby("운용사"):
-        R.add("t9", f"- {mg}: 비교 {{}}개, 비교 불가 {{}}개(첫 판 {{}}~{{}}, 계산 기간 {{}}~{{}}개월), 실제 ÷ 처음 계획 금액 로그 {{}}~{{}}%(중앙 {{}}%), 월 10만 원 적립 기준 금액 차이 {{}}~{{}}원, 바닥선 밖 {{}}개, 판독 방법 변경을 건넌 펀드 {{}}개.",
-              len(g), int(((T["운용사"] == mg) & ~T.code.isin(ok.code)).sum()), g["첫판"].min(), g["첫판"].max(), int(g["개월"].min()), int(g["개월"].max()),
-              *[f"{x * 100:+.2f}" for x in (g["d_적립"].min(), g["d_적립"].max(), g["d_적립"].median())],
-              f"{g['월10만원_금액차'].min():+,.0f}", f"{g['월10만원_금액차'].max():+,.0f}", int((g.c != "").sum()), int(g["방법변경건넘"].astype(str).eq("True").sum()))
-    b = ok.loc[ok["d_적립"].abs().idxmax()]
-    R.add("t9", "- 가장 큰 차이: {} {} ({}), {}~{} {}개월, 로그 {}%(월 10만 원 적립, 원금 {}원 기준 {}원). 위험자산 비중 차이는 최대 {}%p.",
-          b.운용사, b.빈티지, b.code, b.첫판, b.끝월, b.개월, f"{b.d_적립 * 100:+.2f}", f"{b.적립원금:,.0f}", f"{b.월10만원_금액차:+,.0f}", f"{b.위험비중차_최대 * 100:.1f}")
-    R.add("t9", "같은 판을 두 번 읽을 때 생기는 차이의 95%, 약 {}%) 안이면", f"{ok['바닥선'].min() * 100:.2f}")
-    fd = rd(f"{D['t9']}/figures/fig_T9_글라이드변경_data.csv")
-    e = fd[fd["구분"] == "변경 9번"].groupby("운용사").size()
-    R.add("t9", "(운용사별 KB {}, 삼성 {}, 신한 {}, 한국투자 {}, 미래에셋 {})", *[int(e.get(k, 0)) for k in ("KB", "삼성", "신한", "한국투자", "미래에셋")])
-    R.add("t9", "the difference exceeded a chart-reading error floor for {} of {} comparable funds (the largest about {}% in log terms over {} months); {} of the {} had only four months",
-          int(big_.sum()), len(ok), f"{b.d_적립 * 100:.0f}".replace("-", "−"), f"{b.개월:.0f}", len(short_), len(ok))
-    R.add("t9", "For {} of the {} the difference appeared only after", cnt("ins"), int(big_.sum()))
-    R.add("r", "| TDF {}개 중 처음 계획과 비교할 수 있는 {}개에서 판독 잡음 바닥선 밖 차이는 {}개(가장 큰 차이 로그 {}%, {}개월)였고, 그중 {}개는 판독 방법이 바뀐 뒤에만 차이가 생겨(결과 뒤 구분)",
-          len(T), len(ok), int(big_.sum()), U(f"{b.d_적립 * 100:+.2f}"), int(b.개월), cnt("ins"))
-
-
 # ── 10 ───────────────────────────────────────────────────────────────────────
 def r10(R):
     P = rd(f"{D['t10']}/results/T10_gap_by_report.csv")
@@ -614,9 +576,50 @@ def r11(R):
           f"{base['①'] * 100:.0f}", p1(rng.loc["①", "min"]), p1(rng.loc["①", "max"]), p1(min(rng.loc["①", "min"], r120.loc["①", "min"])), p1(max(rng.loc["①", "max"], r120.loc["①", "max"])), int(i1.안겹친창), len(c), int((c.us <= 0).sum()))
 
 
+# ── 12 ───────────────────────────────────────────────────────────────────────
+def r12(R):
+    d = rd(f"{D['t12']}/results/F_scores_by_response.csv")
+    C, G, X, P = "claude-opus-5-5", "gemini-3.8-flash", "모델X", "gpt-5.5(참고)"
+    d["sell"] = d.S1.eq("명시권유") | d.S2.eq("명시권유")
+    d["sellc"] = d.S1.isin(["명시권유", "조건부권유"]) | d.S2.isin(["명시권유", "조건부권유"])
+    g = d.groupby("model")
+    n, sc, wa, tw = g.size(), g.sellc.sum(), g.T_wrong.apply(lambda s: int((s > 0).sum())), g.T_wrong.sum()
+    pc = lambda a, b, k=1: f"{a / b * 100:.{k}f}"
+    rate = lambda col: g[col].apply(lambda s: f"{s.eq('있음').mean() * 100:.0f}")
+    assert not d.sell.any()                                                    # '네 모델 모두 0건'
+    R.add("t12", "모델 이름을 모른 채 응답 {}건을 채점했습니다.", len(d))
+    R.add("t12", "`claude-opus-5-5`(응답 {}건), `gemini-3.8-flash`({}건), 모델X({}건)입니다. `gpt-5.5`는 {}건만", n[C], n[G], n[X], n[P])
+    R.add("t12", "조건을 붙여 권한 응답까지 넣으면 claude-opus-5-5 {}건({}%), gemini-3.8-flash {}건({}%), 모델X {}건({}%), gpt-5.5(참고) {}건이었습니다.",
+          sc[C], pc(sc[C], n[C]), sc[G], pc(sc[G], n[G]), sc[X], pc(sc[X], n[X]), sc[P])
+    dis = g.S1.apply(lambda s: f"{s.eq('만류').mean() * 100:.0f}")
+    R.add("t12", "해지를 말린 응답(S1 만류)은 {}%, {}%, {}%였고", dis[C], dis[G], dis[X])
+    R.add("t12", "세법 진술이 1개 이상 틀린 응답은 claude-opus-5-5 {}%({}건), gemini-3.8-flash {}%({}건), 모델X {}%({}건)였습니다.",
+          pc(wa[C], n[C]), wa[C], pc(wa[G], n[G]), wa[G], pc(wa[X], n[X]), wa[X])
+    m3 = int(tw[[C, G, X]].sum())
+    R.add("t12", "틀린 진술 수는 {}개, {}개, {}개로, 세 모델의 틀린 진술 {}개 중 {}개가 모델X였습니다.", tw[C], tw[G], tw[X], m3, tw[X])
+    e = d[d.role == "본비교"].assign(f=d.T_wrong_ids.fillna("").str.split(";")).explode("f")
+    e = e[e.f != ""]
+    fc, fx = e.f.value_counts(), e[e.model == X].f.value_counts()
+    assert fc.index[0] == "F9" and fc.iloc[0] > fc.iloc[1]
+    R.add("t12", "(세액공제 한도 연 600만 원·공제율 12%/15%)로 {}개였고, {}개 모두 모델X였습니다.", fc["F9"], fx["F9"])
+    assert fc["F9"] == fx["F9"]
+    R.add("t12", "그다음은 F11(연간 납입 한도 1,800만 원) {}개, F7(계좌 안에서 팔거나 바꾸는 것은 그 시점에 과세되지 않음) {}개, F12(산출세액이 없으면 공제 혜택이 생기지 않음) {}개입니다.",
+          fc["F11"], fc["F7"], fc["F12"])
+    assert list(fc.index[1:2]) == ["F11"] and fc["F7"] == fc["F12"] == fc.iloc[2] and fc.iloc[4] < fc["F7"]
+    px = d[d.model == X].groupby("person").T_wrong.sum()
+    R.add("t12", "모델X의 틀린 진술은 인물 A {}개, B {}개, C {}개로", px["A"], px["B"], px["C"])
+    ad, dd = rate("O_add"), rate("D")
+    R.add("t12", "(한도 안 추가납입 언급)은 {}%, {}%, {}%였습니다. 전문가 상담·면책 문구는 claude-opus-5-5 {}%, gemini-3.8-flash {}%, 모델X {}%였습니다.",
+          ad[C], ad[G], ad[X], dd[C], dd[G], dd[X])
+    R.add("t12", "Responses with at least one wrong tax statement were {}% for claude-opus-5-5, {}% for gemini-3.8-flash ({} responses only) and {}% for an anonymized model X, which made {} of the {} wrong statements.",
+          pc(wa[C], n[C]), pc(wa[G], n[G]), n[G], pc(wa[X], n[X]), tw[X], m3)
+    R.add("r", "| 급락장 AI 연금 상담 감사(잠정) | 프롬프트 15개를 5번씩 물었더니 '해지하라·다 팔라'고 직접 권한 응답은 0건이었다. 세법 진술이 1개 이상 틀린 응답은 claude-opus-5-5 {}%, gemini-3.8-flash {}%({}건뿐), 이름을 가린 모델X {}%였다.",
+          pc(wa[C], n[C]), pc(wa[G], n[G]), n[G], pc(wa[X], n[X]))
+
+
 def build():
     R = Rules()
-    r01(R); r02(R); tab, tb = r03(R); r04_07(R); r08(R); r09(R); r10(R); r11(R)
+    r01(R); r02(R); tab, tb = r03(R); r04_07(R); r08(R); r10(R); r11(R); r12(R)
     return R, pd.concat([tab, tb], ignore_index=True)
 
 

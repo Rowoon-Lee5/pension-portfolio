@@ -49,9 +49,9 @@
 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 9개국 판정 요약, 한국 사건별 값, 자금흐름 12개월), 읽은 파일 sha256(`_source.txt`).
 - `results/`: `T6_shelter_events.csv`(사건·복귀 규칙·안전자산별 R = 피신 ÷ 보유, 신호월, 피신 개월, 그 기간 주식·안전자산 누적 수익), `T6_shelter_summary.csv`(4칸 판정, 묶음 부트스트랩 구간, 수령세 민감도), `T6_flow_vs_nonbear.csv`(순설정 ÷ 순자산 비율과 비교 창 분위수). 모두 이 주제가 계산한 요약 값이고 월 수익률·지수·기준가·순설정 원값은 없습니다.
-- `docs/설계서_포트폴리오_주제B_20261108.md`: 08~11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문 그대로). 원문의 드라이브 경로(`D:\…
+- `docs/설계서_포트폴리오_주제B_20261108.md`: 08·10·11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문에서 9번 절만 뺌). 원문의 드라이브 경로(`D:\…
 esults\…`)는 원 연구 PC의 결과 폴더이고, 이 저장소에서는 각 주제 폴더의 `results/`·`figures/`입니다.
-- 코드: `notebooks/portfolio/make_topics_b.py`(08~11 공용, 계산·그림·README). 하락장 날짜 규칙은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`의 `dd_detail`, 한국 표본은 `../src/pension_lab/pilot7.py`의 `samples()`.
+- 코드: `notebooks/portfolio/make_topics_b.py`(08·10·11 공용, 계산·그림·README). 하락장 날짜 규칙은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`의 `dd_detail`, 한국 표본은 `../src/pension_lab/pilot7.py`의 `samples()`.
 - 입력(이 저장소에 없음): French 국가별 주식(`fetch/pilot9_global_equity.py`), OECD 3개월 금리·Swinkels 10년 국채(`processed/multicountry_returns_20261017.csv`), 원 연구의 C_multi 사건표(`results/pilot9_20261013/C_multi_20261017/events_monthly.csv`, 재현 확인용), 국내 DataGuide 자료(KOSPI200 TR·국고채 TR·CD91), 금융투자협회 연금 펀드 순설정 묶음(`results/pilot10_20261017/T3_flow/`). 출처와 받는 법은 `../DATA_SOURCES.md`.
 - 실행: 저장소 루트에서 `python 08_shelter_in_account/notebooks/portfolio/make_topics_b.py t6` — 원자료와 원 연구 결과 파일(위 '입력')이 `$PENSION_DATA_ROOT` 아래 원 연구와 같은 경로에 있어야 돕니다(`../DATA_SOURCES.md`). 이 저장소만으로는 돌지 않습니다.
 

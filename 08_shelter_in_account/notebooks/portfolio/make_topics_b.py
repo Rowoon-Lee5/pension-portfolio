@@ -1,11 +1,11 @@
-"""포트폴리오 주제 08~11(원 연구 저장소 notebooks/portfolio/make_topics_b.py, 커밋 66d40c1을 이 저장소 경로에 맞춰 옮김).
-08 = 원 6번 계좌 안 피신(새 계산), 09 = 원 9번 글라이드 변경 반사실(새 계산), 10 = 원 10번 TDF 재매수(보고서 비중 재정리), 11 = 원 12번 원화 30년(기존 결과 그림).
+"""포트폴리오 주제 08·10·11(원 9번 글라이드 변경은 2026-11-12 저장소에서 뺌, 원 연구 저장소 notebooks/portfolio/make_topics_b.py, 커밋 66d40c1을 이 저장소 경로에 맞춰 옮김).
+08 = 원 6번 계좌 안 피신(새 계산), 10 = 원 10번 TDF 재매수(보고서 비중 재정리), 11 = 원 12번 원화 30년(기존 결과 그림).
 판정 규칙 = 08_shelter_in_account/docs/설계서_포트폴리오_주제B_20261108.md(원 연구 커밋 6ef8992, 계산 전 기록).
 계산·문장은 원 스크립트와 같고, 바꾼 것은 읽는 경로·쓰는 곳, 공개 결과 표에서 뺀 열(공시 글라이드 값과 그 값을 되살릴 수 있는 열),
 README의 결과 파일 언급과 끝의 '그림·파일·실행' 절뿐이다.
-실행: python 08_shelter_in_account/notebooks/portfolio/make_topics_b.py [t6 t9 t10 t12]
+실행: python 08_shelter_in_account/notebooks/portfolio/make_topics_b.py [t6 t10 t12]
   - t12: 저장소 11_krw_30y/results/ 만 읽음(원자료 없이 됨).
-  - t6·t9·t10: 원자료와 원 연구 결과 파일이 $PENSION_DATA_ROOT 아래(raw/·processed/·results/) 있어야 돈다(DATA_SOURCES.md).
+  - t6·t10: 원자료와 원 연구 결과 파일이 $PENSION_DATA_ROOT 아래(raw/·processed/·results/) 있어야 돈다(DATA_SOURCES.md).
   → <주제 폴더>/README.md, figures/, results/
 """
 import hashlib
@@ -25,7 +25,7 @@ from pension_lab import paths  # noqa: E402
 
 BLUE, GREY, LGREY = mf.BLUE, mf.GREY, mf.LGREY
 DATA = Path(os.environ["PENSION_DATA_ROOT"]) / "results" if os.environ.get("PENSION_DATA_ROOT") else None
-D8, D9, D10, D11 = "08_shelter_in_account", "09_glidepath_changes", "10_tdf_rebuy_holdings", "11_krw_30y"
+D8, D10, D11 = "08_shelter_in_account", "10_tdf_rebuy_holdings", "11_krw_30y"
 SCRIPT = f"{D8}/notebooks/portfolio/make_topics_b.py"
 DESIGN = f"`../{D8}/docs/설계서_포트폴리오_주제B_20261108.md`(원 연구 커밋 6ef8992, 계산 전 기록)"
 GIT = "원 연구 저장소 make_topics_b.py 커밋 66d40c1eca65875c0e68921ea98fd0a5b3b1c301을 옮김\n"
@@ -86,7 +86,7 @@ def readme(o, title, **sec):
 
 def out(sub):
     global OUT
-    OUT = ROOT / {"06_계좌안피신": D8, "09_글라이드변경": D9, "10_TDF재매수": D10, "12_원화30년": D11}[sub]
+    OUT = ROOT / {"06_계좌안피신": D8, "10_TDF재매수": D10, "12_원화30년": D11}[sub]
     OUT.mkdir(parents=True, exist_ok=True)
     return OUT
 
@@ -310,152 +310,6 @@ def t6():
 - 자금흐름 비교창은 겹치고, 하락장이 아닌 달이 2014~2017년에 몰려 있어 TDF처럼 빨리 커진 묶음은 비교가 어렵습니다.
 """)
     return dict(S=S, kr=k[["confirm", "규칙", "안전자산", "R", "피신개월", "신호없음"]], flow=FL[FL.h개월 == 12])
-
-
-# ── 9번: 글라이드패스 변경 → 처음 계획대로였다면 ────────────────────────────
-def t9():
-    BAD = r"≠ 목록|전략배분|UH"     # 원 연구 pension_lab.h1d_r5.BAD(판독 불가 note), 이 저장소에 그 모듈이 없어 값만 옮김
-    o = out("09_글라이드변경")
-    g = rd(paths.RAW / "fund_tdf" / "glidepath_disclosed_hist_20261012fix.csv", dtype={"rcept_no": str, "rcept_dt": str, "code": str})
-    C = rd(r"pilot9_20261013\C_real_20261017\inputs\C2_components_monthly.csv", parse_dates=["month_end"]).set_index("month_end")[["stk", "bd"]].dropna()
-    S3 = r"simpletest_20261027\T3\full_r1_20261027_0433"
-    ev = rd(rf"{S3}\T3_07_decision_events.csv"); ev = ev[(ev["τ이름"].astype(str) == "2.5") & (ev.D3 == "A") & (ev.D4 == "A")]
-    assert len(ev) == 9 and ev.groupby("운용사").size().to_dict() == {"KB": 1, "삼성": 2, "신한": 4, "한국투자": 2}
-    fl = rd(rf"{S3}\T3_13b_cf_floor_used.csv"); floor = fl[fl["종류"] == "누적"].groupby("운용사")["d바닥선_q95"].first()
-    lt = rd(r"pilot10_20261017\I2x_hist\results_lt2020\lt2020_events.csv")
-    note = g.note.fillna("")
-    num = g[g.yrs_to_target.notna() & g.risky_target_pct.notna() & ~note.str.contains(BAD)]
-    V = {}
-    for (c, r), d in num.groupby(["code", "rcept_no"]):
-        xy = d.groupby("yrs_to_target").risky_target_pct.mean()
-        if len(xy) >= 2:
-            V.setdefault(c, []).append(dict(rno=r, dt=pd.Timestamp(d.rcept_dt.iloc[0]), x=xy.index.to_numpy(float), y=xy.to_numpy(float) / 100,
-                                           meth=str(d.method.iloc[0]).split("(")[0]))
-    info = g.groupby("code").agg(manager=("manager", "first"), vintage=("vintage", "first"), 판수=("rcept_no", "nunique")).astype({"vintage": int})
-    rows, paths_ = [], []
-    for c, inf in info.iterrows():
-        vs = sorted(V.get(c, []), key=lambda v: v["rno"]); base = dict(code=c, 운용사=inf.manager, 빈티지=inf.vintage, 판수=inf.판수, 곡선판=len(vs))
-        if len(vs) < 2:
-            rows.append(base | dict(판정="비교 불가(곡선으로 읽을 수 있는 판 2개 미만)")); continue
-        v0 = vs[0]; end = min(pd.Timestamp("2026-08-31"), pd.Timestamp(f"{inf.vintage}-12-31"))
-        m = C.loc[(C.index > v0["dt"] + ME) & (C.index <= end)]
-        if not len(m):
-            rows.append(base | dict(첫판=v0["dt"].date(), 판정="비교 불가(첫 판 뒤 계산 기간 없음)")); continue
-        x = (m.index.year + (m.index.month - 1) / 12 - inf.vintage).to_numpy(float)
-        known = [max((v for v in vs if v["dt"] <= t - pd.offsets.MonthEnd(1)), key=lambda v: v["rno"]) for t in m.index]   # 전달 말까지 접수된 최신 판
-        wf = np.interp(x, v0["x"], v0["y"]); wa = np.array([np.interp(xi, v["x"], v["y"]) for xi, v in zip(x, known)])
-        ext = np.mean([(xi < v["x"].min()) or (xi > v["x"].max()) for xi, v in zip(x, known)] + [(xi < v0["x"].min()) or (xi > v0["x"].max()) for xi in x])
-        Rf, Ra = wf * m.stk + (1 - wf) * m.bd, wa * m.stk + (1 - wa) * m.bd
-        acc = lambda Rr: np.cumprod((1 + Rr.to_numpy())[::-1]).sum()   # 매달 초 1 납입: Σ_t Π_{s≥t}(1+R_s)
-        Wf, Wa = acc(Rf), acc(Ra)
-        used = {v["rno"] for v in known}; nchg = len(used - {v0["rno"]})
-        d = np.log(Wa / Wf); fz = floor.get(inf.manager, np.nan)
-        # 감사 H2 뒤 추가(결과 뒤): 판독 방법이 처음 바뀌기 전 달까지만 누적한 d
-        mc = [v["meth"] != v0["meth"] for v in known]; i1 = mc.index(True) if any(mc) else len(m)
-        ds = np.log(acc(Ra.iloc[:i1]) / acc(Rf.iloc[:i1])) if i1 else np.nan
-        rows.append(base | dict(첫판=v0["dt"].date(), 끝월=m.index[-1].strftime("%Y-%m"), 개월=len(m), 쓰인판=len(used), 바뀐판=nchg,
-                                방법변경건넘=any(mc), 방법변경첫달=m.index[i1].strftime("%Y-%m") if any(mc) else "", 같은방법개월=i1, d_같은방법구간=ds, 범위밖비율=ext,
-                                첫계획_평균위험비중=wf.mean(), 실제계획_평균위험비중=wa.mean(), 위험비중차_최대=np.abs(wa - wf).max(),
-                                d_적립=d, d_일시금=np.log(np.prod(1 + Ra) / np.prod(1 + Rf)), 월10만원_금액차=(Wa - Wf) * 1e5, 적립원금=len(m) * 1e5, 바닥선=fz,
-                                판정="비교 불가(쓰인 판이 첫 판뿐)" if nchg == 0 else "판독 오차와 구분 안 됨" if abs(d) <= fz else ("실제 계획이 더 많음" if d > 0 else "처음 계획이 더 많음")))
-        paths_.append(pd.DataFrame(dict(code=c, 운용사=inf.manager, 빈티지=inf.vintage, month=m.index.strftime("%Y-%m"), x=x, w_첫=wf, w_실제=wa)))
-    T = pd.DataFrame(rows)
-    out_ = T.판정.isin(["실제 계획이 더 많음", "처음 계획이 더 많음"])
-    T["원인구분"] = np.select([out_ & ~T.방법변경건넘.eq(True), out_ & (T.d_같은방법구간.abs() > T.바닥선), out_],
-                            ["판독 방법 변경 없음", "같은 방법 구간에서도 바닥선 밖", "방법 변경 뒤에만 차이(나눌 수 없음)"], "")
-    csv(T, "T9_cf_by_fund", f"펀드별 '처음 공시 계획' 대 '실제(바뀐) 계획', 같은 실제 시장 경로(C2_components stk·bd, 원화 UH), 보수 0(두 계획 같음). 판정 = {DESIGN}.\n"
-        "판독 가능 행 = h1d_r5 규칙(BAD), 곡선 = 숫자 x 2개 이상인 판, 범위 밖 끝값 고정. 실제 계획 = 그 달 수익에 대해 전달 말까지 접수된 최신 판.\n"
-        "감사(H2) 뒤 추가, 결과 뒤: d_같은방법구간 = 실제 계획에 쓰인 판의 판독 방법이 첫 판과 처음 달라지기 전 달까지만 누적한 d. 원인구분 = 바닥선 밖 펀드를 방법 변경 없음 / 같은 방법 구간에서도 밖 / 방법 변경 뒤에만 차이로 나눔.\n"
-        "이 저장소 판은 첫계획_평균위험비중·실제계획_평균위험비중 열을 뺌(공시 글라이드 값).",
-        drop=["첫계획_평균위험비중", "실제계획_평균위험비중"])
-    # 원 연구는 여기서 T9_cf_weights_monthly.csv(펀드·월별 처음·실제 계획 위험자산 비중)를 쓴다 — 공시 글라이드 값이라 이 저장소에는 쓰지 않음
-    ok = T[T.판정.isin(["판독 오차와 구분 안 됨", "실제 계획이 더 많음", "처음 계획이 더 많음"])]
-    M = ok.groupby("운용사").agg(펀드=("code", "size"), d_중앙=("d_적립", "median"), d_최소=("d_적립", "min"), d_최대=("d_적립", "max"),
-                               금액차_최소=("월10만원_금액차", "min"), 금액차_최대=("월10만원_금액차", "max"),
-                               바닥선밖=("판정", lambda s: int((s != "판독 오차와 구분 안 됨").sum())), 방법변경건넘=("방법변경건넘", "sum"),
-                               개월_최소=("개월", "min"), 개월_최대=("개월", "max"), 첫판_최소=("첫판", "min"), 첫판_최대=("첫판", "max")).reset_index()
-    nc = T[~T.code.isin(ok.code)].groupby("운용사").size()
-    M["비교불가"] = M.운용사.map(nc).fillna(0).astype(int)
-    M = pd.concat([M, pd.DataFrame([dict(운용사=k, 펀드=0, 비교불가=int(v)) for k, v in nc.items() if k not in set(M.운용사)])], ignore_index=True)
-
-    MG = ["KB", "삼성", "신한", "한국투자", "미래에셋"]
-    fig = plt.figure(figsize=(9.5, 6.2))
-    ax = fig.add_axes([0.10, 0.25, 0.52, 0.38]); bx = fig.add_axes([0.72, 0.25, 0.26, 0.38])
-    for e in lt.itertuples():
-        ax.axvspan(pd.Timestamp(e.peak), pd.Timestamp(e.trough) if isinstance(e.trough, str) else pd.Timestamp("2026-10-31"), color="#EEE", zorder=0)
-    vd = g.drop_duplicates(["code", "rcept_no"]).assign(dt=lambda x: pd.to_datetime(x.rcept_dt), ok=lambda x: x.rcept_no.isin({v["rno"] for vv in V.values() for v in vv}))
-    for i, mg in enumerate(MG):
-        z = vd[vd.manager == mg].drop_duplicates("dt")
-        ax.scatter(z.dt, np.full(len(z), i), s=6, color=np.where(z.ok, GREY, "white"), edgecolors=GREY, linewidths=0.4, zorder=2)
-        e = ev[ev.운용사 == mg]
-        ax.scatter(pd.to_datetime(e.묶음날짜), np.full(len(e), i), marker="D", s=40, color="#B03A2E", zorder=3)
-    ax.set_yticks(range(5), MG); ax.invert_yaxis(); ax.set_ylim(4.6, -0.6)
-    ax.set_title("판본 공시일(회색 = 곡선 판독 가능, 흰색 = 불가), ◆ = 2.5%p 넘는 변경\n음영 = 사후 구분한 하락 국면(LT 20/20)", loc="left", fontsize=8.5, color="#222")
-    bx.axvspan(-floor.max() * 100, floor.max() * 100, color="#EEE")
-    bx.axvline(0, color="black", lw=0.6)
-    for i, mg in enumerate(MG):
-        z = ok[ok.운용사 == mg]
-        bx.scatter(z.d_적립 * 100, np.full(len(z), i) + np.linspace(-0.2, 0.2, len(z)) if len(z) else [], s=14,
-                   color=np.where(z.판정 == "판독 오차와 구분 안 됨", GREY, np.where(z.원인구분 == "방법 변경 뒤에만 차이(나눌 수 없음)", "#E08E0B", BLUE)), zorder=3)
-    bx.set_yticks(range(5), [f"{mg}\n비교 {int((ok.운용사 == mg).sum())}·불가 {int(nc.get(mg, 0))}" for mg in MG], fontsize=8); bx.invert_yaxis(); bx.set_ylim(4.7, -0.5)
-    bx.set_xlabel("실제 ÷ 처음 계획 금액, 로그 % (월 적립)", fontsize=8)
-    bx.set_title("펀드별 금액 차이, 회색 띠 = 판독 잡음 바닥선\n파랑 = 같은 판독 방법에서도 밖\n주황 = 판독 방법 변경 뒤에만 밖", loc="left", fontsize=7.5, color="#222")
-    nbig = int((ok.판정 != '판독 오차와 구분 안 됨').sum()); nu = ok.원인구분.value_counts()
-    n_same, n_ins, n_none = (int(nu.get(x, 0)) for x in ("같은 방법 구간에서도 바닥선 밖", "방법 변경 뒤에만 차이(나눌 수 없음)", "판독 방법 변경 없음"))
-    fl_ = lambda x: ", ".join(f"{r.운용사} {r.빈티지}" for r in ok[ok.원인구분 == x].sort_values(["운용사", "빈티지"]).itertuples())
-    long_ = ok[ok.개월 > 12]; short_ = ok[ok.개월 <= 12]
-    assert set(short_.운용사) <= {"신한", "미래에셋"} and {str(x)[:7] for x in short_.첫판} == {"2026-04"} and short_.개월.max() <= 4
-    inph = lambda d: [e.peak for e in lt.itertuples() if pd.Timestamp(e.peak) <= pd.Timestamp(d) <= (pd.Timestamp(e.trough) if isinstance(e.trough, str) else pd.Timestamp("2026-12-31"))]
-    within = int(ev.묶음날짜.apply(lambda d: bool(inph(d))).sum()); nph = len({p for d in ev.묶음날짜 for p in inph(d)})
-    head(fig, f"TDF 계획 변경 9번 중 {within}번이 사후 구분 하락 국면 안(국면 {nph}개에 몰림, 국면 비율 약 45%).\n"
-              f"판독 오차 넘게 달라진 {nbig}개 중 {n_ins}개는 판독 방법이 바뀐 뒤에만 차이가 생겼고,\n"
-              f"{nbig - n_ins}개는 같은 판독 방법에서도 바닥선 밖이었다(검정력 없음, 결과 뒤 구분)",
-         "5대 운용사 TDF(2025~2055 빈티지 35개) 투자설명서 1,004판의 위험자산 비중 계획. 왼쪽 = 판본·변경 시점, 오른쪽 = 같은 실제 시장 경로에서\n"
-         "'처음 공시한 계획을 끝까지 따랐다면' 대 '실제로 바뀐 계획을 따랐다면'(첫 판 다음 달 ~ 2026-08 또는 목표연도 말, 매달 같은 금액 적립)",
-         f"시장 = 원화 주식 꾸러미(국내 15.2% + 선진국 84.8%, 환노출)·국고채 TR 월간. 보수는 두 계획에 같다고 보고 0. 판독 잡음 바닥선 = T3 정본 운용사별 약 {floor.min() * 100:.2f}%.\n"
-         "변경 9번 = T3 정본(운용사·공시 묶음 단위, 펀드 기준 37쌍, 세는 기준에 따라 달라짐). 하락 국면은 사후 구분이고 기준 비율 0.446은 T3_10 값. 횟수가 적어 검정력이 없음(기술만).\n"
-         f"비교 불가 = 곡선으로 읽을 수 있는 판이 2개 미만이거나, 첫 판 뒤 계산 기간이 없거나, 쓰인 판이 첫 판뿐. 신한·미래에셋 {len(short_)}개는 첫 곡선 판이 2026-04라 4개월 비교뿐.\n"
-         "파랑·주황 구분(판독 방법이 처음 바뀌기 전 구간만 누적한 d)은 감사 뒤 결과를 보고 추가한 구분이고, 바닥선은 이 구간 길이에 맞춘 값이 아님.\n"
-         "출처: raw glidepath_disclosed_hist_20261012fix, simpletest T3 full_r1(T3_07·T3_13b), pilot9 C2_components, pilot10 lt2020_events. 결과: T9_cf_by_fund.csv.")
-    save(fig, "fig_T9_글라이드변경", pd.concat([M.assign(구분="운용사 요약"), ev.assign(구분="변경 9번")]))
-    big = ok.loc[ok.d_적립.abs().idxmax()]
-    readme(o, "9. TDF 글라이드패스 변경 이력 — 계획이 바뀐 게 가입자 금액을 얼마나 바꿨나",
-        문제의식="""
-TDF는 "나이에 따라 주식 비중을 이렇게 줄이겠다"는 계획(글라이드패스)을 투자설명서에 공시합니다. 그런데 이 계획이 중간에 바뀐 적이 있습니다. 가입할 때 본 계획과 실제로 따른 계획이 달랐다면, 가입자 금액은 얼마나 달라졌을까요? 그리고 계획 변경이 하락장에 몰렸을까요?
-""",
-        한_일=f"""
-- 5대 운용사(KB·삼성·신한·한국투자·미래에셋) TDF 35개(2025~2055 빈티지)의 투자설명서 1,004판에서 뽑은 위험자산 비중표(10월 27일 T3)를 그대로 썼습니다.
-- 펀드마다 "처음 공시한 계획(곡선으로 읽을 수 있는 첫 판)을 끝까지 따른 경우"와 "실제로 바뀐 계획을 공시 시점마다 갈아탄 경우"를, 같은 실제 시장 경로(원화 주식 꾸러미·국고채 월 수익, 2016~2026)에서 첫 판 다음 달부터 2026-08(또는 목표연도 말)까지 매달 같은 금액을 넣어 비교했습니다. 판정 규칙은 계산 전에 설계서에 적었습니다.
-- 차이가 T3에서 잰 판독 잡음 바닥선(같은 판을 두 번 읽을 때 생기는 차이의 95%, 약 {floor.min() * 100:.2f}%) 안이면 "판독 오차와 구분 안 됨"으로 봤습니다.
-- 변경 시점은 T3 정본의 9번(위험자산 비중 2.5%p 넘는 변경, 운용사·공시 묶음 단위)을 타임라인에 그렸습니다.
-- 설계서 문구 정정(결과 보기 전): 설계서의 "그 달 말 이전에 접수된 판"을 "그 달 수익에는 전달 말까지 접수된 판"으로 구현했습니다(그 달 안에 공시된 계획을 그 달 초부터 쓰는 미래 정보 사용을 막기 위함).
-- 결과: `results/T9_cf_by_fund.csv`(펀드별), 그림 `fig_T9_글라이드변경`.
-""",
-        결과=f"""
-- **변경 9번 중 {within}번이 사후에 구분한 하락 국면 안이었습니다.** 이 국면은 전체 공시 기간의 약 45%(T3 기준 비율 0.446)입니다. {within}번은 국면 {nph}개에 몰려 있어 독립 사건 9개가 아니고, 국면 구분은 사후이며 후보 선택에 따라 달라집니다. 횟수가 적어 검정력이 없어 기술만 합니다(운용사별 KB 1, 삼성 2, 신한 4, 한국투자 2, 미래에셋 0).
-- **처음 계획을 지켰을 때와 비교할 수 있는 펀드는 {len(ok)}개**였고(나머지 {len(T) - len(ok)}개는 비교 불가), 이 중 의미 있는 기간({int(long_.개월.min())}~{int(long_.개월.max())}개월)을 가진 것은 {'·'.join(sorted(set(long_.운용사)))} {len(long_)}개이고, 신한·미래에셋 {len(short_)}개는 첫 곡선 판이 2026-04라 {int(short_.개월.max())}개월 비교뿐입니다(그래서 d ≈ 0).
-- 금액 차이가 판독 잡음 바닥선보다 큰 펀드는 {nbig}개입니다. 감사(H2) 뒤 판독 방법이 처음 바뀌기 전 구간만 따로 누적해 보니(결과 뒤 추가한 구분): {n_same}개({fl_('같은 방법 구간에서도 바닥선 밖')})는 같은 방법 구간만으로도 바닥선 밖이고, {n_ins}개({fl_('방법 변경 뒤에만 차이(나눌 수 없음)')})는 차이가 방법 변경 뒤에만 생겨 계획 변경과 판독 방법 차이를 나눌 수 없으며, {n_none}개({fl_('판독 방법 변경 없음')})는 방법 변경을 건너지 않았습니다. 처음 보고서(b64ec7a)의 "17개 중 15개는 방법 변경과 나눌 수 없다"는 틀린 문장이었습니다(경로 어디서든 방법이 바뀐 판을 한 번이라도 쓰면 '나눌 수 없음'으로 셌음).
-""" + "\n".join(f"- {r.운용사}: 비교 {r.펀드}개, 비교 불가 {r.비교불가}개" + (f"(첫 판 {r.첫판_최소}~{r.첫판_최대}, 계산 기간 {int(r.개월_최소)}~{int(r.개월_최대)}개월), 실제 ÷ 처음 계획 금액 로그 {r.d_최소 * 100:+.2f}~{r.d_최대 * 100:+.2f}%(중앙 {r.d_중앙 * 100:+.2f}%), 월 10만 원 적립 기준 금액 차이 {r.금액차_최소:+,.0f}~{r.금액차_최대:+,.0f}원, 바닥선 밖 {r.바닥선밖}개, 판독 방법 변경을 건넌 펀드 {int(r.방법변경건넘)}개" if r.펀드 else "") + "." for r in M.itertuples()) + f"""
-- 가장 큰 차이: {big.운용사} {big.빈티지} ({big.code}), {big.첫판}~{big.끝월} {big.개월}개월, 로그 {big.d_적립 * 100:+.2f}%(월 10만 원 적립, 원금 {big.적립원금:,.0f}원 기준 {big.월10만원_금액차:+,.0f}원). 위험자산 비중 차이는 최대 {big.위험비중차_최대 * 100:.1f}%p.
-""",
-        말하면_안_되는_것="""
-- "운용사가 하락장을 예측해서 계획을 바꿨다" / "하락장에 몰렸다" — 9번뿐이고 국면은 사후 구분이라 검정력이 없습니다.
-- "계획 변경으로 가입자가 손해(이득)를 봤다" — 판독 오차보다 큰 차이는 일부 펀드뿐이고, 일부는 방법 변경 뒤에만 차이가 생겨 방법 차이와 분리되지 않으며, 바닥선은 체계적 판독 차이를 담지 못합니다. 지수 × 비중 근사이지 실제 펀드 수익이 아닙니다.
-- "하락 국면 안에 몰렸다" — 국면 안의 변경은 국면 몇 개 안에 묶여 있어 독립 사건이 아닙니다.
-- 정확 이항 p 값을 근거로 쓰기(T3 SAY_OK 금지 목록).
-""",
-        한계="""
-- 실제 펀드가 아니라 '공시 위험자산 비중 × 지수' 근사입니다. 위험자산 안의 구성(국내·해외, 환헤지) 변화는 반영하지 않았고, 보수는 두 계획에 같다고 보고 0으로 뒀습니다.
-- 오래된 빈티지의 첫 판은 그 시점 이후 구간만 공시해 범위 밖은 끝값으로 고정했습니다(`범위밖비율` 열).
-- 신한은 2026-04 이전 판 대부분이 0년 지점·그래프 왼쪽 끝만 읽혀 곡선을 만들 수 없고, 미래에셋은 2026-04 이전 판에 그래프가 없습니다. 그래서 두 운용사는 첫 곡선 판이 2026-04이고 비교가 4개월뿐입니다. 신한의 2018~2021년 변경 4번은 금액 계산에 들어가지 못했습니다.
-- 바닥선은 T3의 2055·양식화 경로 조건에서 같은 판독 방법 안의 무작위 오차로 만든 값입니다. 지평이 다른 이 계산과, 같은 방법 안의 체계적 판독 차이·방법 변경의 체계적 차이에는 그대로 맞지 않습니다. 그래서 '같은 방법 구간에서도 바닥선 밖'도 "계획 변경 효과"라고 단정하지 않습니다.
-- 설계서 문구("그 달 말 이전 접수") 그대로 구현했다면 바닥선 밖이 1개 늘어 18개였습니다(감사 L1; 구현은 미래 정보가 없는 '전달 말까지' 쪽). 이 정정은 결과와 같은 커밋(9761f8b)에 들어가 git으로 '결과 전'을 확인할 수는 없습니다.
-- 변경 9번은 T3 정본의 운용사·공시 묶음 단위이고, 펀드 기준으로는 37쌍이라 세는 기준에 따라 달라집니다(DOC_AUDIT 9절).
-- 5대 운용사의 현존 펀드만 봤고 청산·합병 TDF는 없습니다.
-- 한 번뿐인 실제 시장 경로라 다른 시장에서는 크기·부호가 달라질 수 있습니다. 10월 27일 T3의 반사실(모든 빈티지를 2001년 30세로 놓은 양식화 계산, T3_14)과는 기간 정의가 다릅니다.
-- 미국 선행연구(Brown·Davies·Sobotka)는 제목만 확인했고 원문 대조는 하지 않았습니다.
-""")
-    return dict(M=M, ev=ev[["운용사", "묶음날짜"]], within=within)
 
 
 # ── 10번: 분기 보고서로 목표 − 실제 ───────────────────────────────────────────
@@ -701,9 +555,9 @@ TAIL = {
 
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 9개국 판정 요약, 한국 사건별 값, 자금흐름 12개월), 읽은 파일 sha256(`_source.txt`).
 - `results/`: `T6_shelter_events.csv`(사건·복귀 규칙·안전자산별 R = 피신 ÷ 보유, 신호월, 피신 개월, 그 기간 주식·안전자산 누적 수익), `T6_shelter_summary.csv`(4칸 판정, 묶음 부트스트랩 구간, 수령세 민감도), `T6_flow_vs_nonbear.csv`(순설정 ÷ 순자산 비율과 비교 창 분위수). 모두 이 주제가 계산한 요약 값이고 월 수익률·지수·기준가·순설정 원값은 없습니다.
-- `docs/설계서_포트폴리오_주제B_20261108.md`: 08~11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문 그대로). 원문의 드라이브 경로(`D:\…
+- `docs/설계서_포트폴리오_주제B_20261108.md`: 08·10·11 판정 규칙(원 연구 커밋 6ef8992에 계산 전 커밋된 원문에서 9번 절만 뺌). 원문의 드라이브 경로(`D:\…
 esults\…`)는 원 연구 PC의 결과 폴더이고, 이 저장소에서는 각 주제 폴더의 `results/`·`figures/`입니다.
-- 코드: `notebooks/portfolio/make_topics_b.py`(08~11 공용, 계산·그림·README). 하락장 날짜 규칙은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`의 `dd_detail`, 한국 표본은 `../src/pension_lab/pilot7.py`의 `samples()`.
+- 코드: `notebooks/portfolio/make_topics_b.py`(08·10·11 공용, 계산·그림·README). 하락장 날짜 규칙은 `../01_downturn_timing/notebooks/pilot9/_build_C_real_inputs.py`의 `dd_detail`, 한국 표본은 `../src/pension_lab/pilot7.py`의 `samples()`.
 - 입력(이 저장소에 없음): French 국가별 주식(`fetch/pilot9_global_equity.py`), OECD 3개월 금리·Swinkels 10년 국채(`processed/multicountry_returns_20261017.csv`), 원 연구의 C_multi 사건표(`results/pilot9_20261013/C_multi_20261017/events_monthly.csv`, 재현 확인용), 국내 DataGuide 자료(KOSPI200 TR·국고채 TR·CD91), 금융투자협회 연금 펀드 순설정 묶음(`results/pilot10_20261017/T3_flow/`). 출처와 받는 법은 `../DATA_SOURCES.md`.
 - RUN1
 
@@ -712,25 +566,6 @@ NOTE
 ---
 **English summary.** In a bear market, instead of cashing out a Korean pension account (16.5% tax), a saver could switch to a money-market or bond fund inside the account and return after a recovery signal. Across 63 confirmed bear markets in nine developed countries (local currency), returning only after the index regained its previous peak left the median saver with 0.80–0.87 times what holding would have given (90% cluster-bootstrap intervals below 1); returning after a 20% rebound from the low gave 0.90–0.94 times, not distinguishable from holding. Whether switching costs more than the cash-out tax depends on how later pension-income tax is treated: a sensitivity added after seeing the results changes some verdicts. Korean events since 1991 are reported one by one. Fund-flow data cannot separate new contributions from switches. Not investment advice.
 """.replace("RUN1", RUN.format(k="t6", extra=NEED)),
-    D9: f"""
-## 그림
-
-![글라이드패스 변경](figures/fig_T9_글라이드변경.png)
-
-## 파일
-
-- `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 운용사 요약과 변경 9번 날짜), 읽은 파일 sha256(`_source.txt`). 왼쪽 판본 점은 투자설명서 공시일이고, 공시 위험자산 비중 값은 그림·표 어디에도 넣지 않았습니다.
-- `results/`: `T9_cf_by_fund.csv`(펀드별 첫 판·계산 기간·쓰인 판 수·판독 방법 변경·d·월 10만 원 금액 차이·판정·원인 구분). 원 연구의 평균 위험비중 2열과 펀드·월별 비중표(`T9_cf_weights_monthly.csv`)는 공시 글라이드 값이라 넣지 않았습니다.
-- 판정 규칙: `../{D8}/docs/설계서_포트폴리오_주제B_20261108.md` 9번.
-- 코드: `../{D8}/notebooks/portfolio/make_topics_b.py`(08~11 공용).
-- 입력(이 저장소에 없음): 공시 글라이드 판본표(`raw/fund_tdf/glidepath_disclosed_hist_20261012fix.csv`, 금융투자협회 전자공시 투자설명서에서 읽음), 원 연구 T3 결과(`results/simpletest_20261027/T3/full_r1_20261027_0433/`의 변경 사건·판독 잡음 바닥선), 시장 경로(`results/pilot9_20261013/C_real_20261017/inputs/C2_components_monthly.csv`, DataGuide 가공), 하락 국면(`results/pilot10_20261017/I2x_hist/results_lt2020/lt2020_events.csv`). 출처는 `../DATA_SOURCES.md`.
-- RUN1
-
-NOTE
-
----
-**English summary.** Korean target-date funds have revised the glide paths disclosed in their prospectuses. Comparing, on the same realized market path with equal monthly contributions, the plan first disclosed with the plan actually in force, the difference exceeded a chart-reading error floor for 17 of 33 comparable funds (the largest about −12% in log terms over 115 months); 12 of the 33 had only four months to compare. For 7 of the 17 the difference appeared only after the way the prospectus chart was read changed, so plan changes and reading method cannot be separated there. Seven of nine plan changes fell inside downturn phases identified after the fact, but they cluster in two phases and the count is too small to test. Not investment advice.
-""".replace("RUN1", RUN.format(k="t9", extra=NEED)),
     D10: f"""
 ## 그림
 
@@ -741,7 +576,7 @@ NOTE
 - `figures/`: 그림(`.png`·`.svg`), 그림 숫자(`_data.csv`: 분기 중앙값과 판정 개수), 읽은 파일 sha256(`_source.txt`).
 - `results/`: `T10_gap_by_report.csv`(보고서별 '실제 − 목표' 격차의 점·하한·상한과 점이 경계 밖인지), `T10_change_after_trough.csv`(펀드별 저점 직전 수준과 1·2·4번째 뒤 보고서 변화, 설계서 판정과 결과 뒤 보류 규칙 판정), `T10_pilot8_mismatch.csv`(원 연구 두 계산의 값 차이). 보유내역 원행·비중 값·공시 목표 값은 넣지 않았고 격차만 넣었습니다(비중과 격차를 함께 두면 공시 글라이드 값이 되살아나므로). 다만 2026년 공시 대비 격차 열(`g_S2026_own`)은 외부에서 구한 현재 투자설명서 글라이드와 합치면 보고서별 비중과 과거 목표를 되살릴 수 있습니다(이 저장소 파일만으로는 안 됨).
 - 판정 규칙: `../{D8}/docs/설계서_포트폴리오_주제B_20261108.md` 10번.
-- 코드: `../{D8}/notebooks/portfolio/make_topics_b.py`(08~11 공용). 자산운용보고서 받는 코드는 `../src/pension_lab/fetch/mgmt_report_tdf.py`.
+- 코드: `../{D8}/notebooks/portfolio/make_topics_b.py`(08·10·11 공용). 자산운용보고서 받는 코드는 `../src/pension_lab/fetch/mgmt_report_tdf.py`.
 - 입력(이 저장소에 없음): 원 연구가 보유내역에서 만든 보고서별 위험자산 비중(`results/pilot10_20261017/T1_rebuy/T1c_calib_points.csv`, 대조용 `results/pilot8_20261010/T1d_desc/t1d_rows.csv`)과 보고서 날짜의 공시 목표(`results/pilot8_20261010/T1_reduced/t1r_glide_at_reports.csv`). 출처는 `../DATA_SOURCES.md`.
 - RUN1
 
@@ -773,6 +608,6 @@ TAIL = {k: v.replace("NOTE", NOTE) for k, v in TAIL.items()}
 
 if __name__ == "__main__":
     pd.set_option("display.width", 240); pd.set_option("display.max_columns", 30)
-    which = sys.argv[1:] or (["t6", "t9", "t10"] if DATA else []) + ["t12"]
+    which = sys.argv[1:] or (["t6", "t10"] if DATA else []) + ["t12"]
     for k in which:
         print("=====", k); print(globals()[k]())
